@@ -13,7 +13,6 @@ body {
   justify-content: center;
   overflow: hidden;
   position: relative;
-  
   background-color: #f7f9fd;
   background-image: 
     linear-gradient(#e1e8f0 1.2px, transparent 1.2px),
@@ -22,9 +21,6 @@ body {
   background-position: center center;
 }
 
-/* =========================================
-   🎵 FLOATING VINYL MUSIC PLAYER
-   ========================================= */
 .music-toggle-btn {
   position: fixed;
   top: 18px;
@@ -72,7 +68,6 @@ body {
   border: 2px solid #ffffff;
 }
 
-/* When playing: Spin smoothly */
 .music-toggle-btn.playing .vinyl-disc {
   animation: spinVinyl 3.5s linear infinite;
 }
@@ -81,7 +76,6 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* Floating musical notes */
 .music-note {
   position: absolute;
   color: #ff4d6d;
@@ -104,7 +98,6 @@ body {
   100% { transform: translate(-18px, -24px) scale(1.1); opacity: 0; }
 }
 
-/* Ambient Particles */
 .ambient-particles {
   position: absolute;
   inset: 0;
@@ -137,7 +130,6 @@ body {
   z-index: 9999;
 }
 
-/* Balloons */
 .balloons-container {
   position: fixed;
   inset: 0;
@@ -179,7 +171,6 @@ body {
   height: 100%;
 }
 
-/* Base Paper */
 .paper {
   position: absolute;
   width: clamp(290px, 86vw, 350px);
@@ -189,13 +180,11 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  
   background-color: #ffffff;
   background-image: 
     linear-gradient(rgba(180, 210, 240, 0.35) 1px, transparent 1px),
     linear-gradient(90deg, rgba(180, 210, 240, 0.35) 1px, transparent 1px);
   background-size: 18px 18px;
-  
   border-radius: 6px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05);
   cursor: grab;
@@ -211,7 +200,6 @@ body {
   transition: none !important;
 }
 
-/* Washi Tape */
 .tape {
   position: absolute;
   height: 24px;
@@ -228,7 +216,6 @@ body {
 .tape-top-left { top: -10px; left: 15px; transform: rotate(-8deg); background: rgba(186, 225, 255, 0.85); }
 .tape-top-right { top: -10px; right: 15px; transform: rotate(7deg); background: rgba(255, 179, 186, 0.85); }
 
-/* Stamp */
 .stamp {
   font-family: 'Caveat', cursive;
   font-size: 13px;
@@ -254,7 +241,6 @@ body {
   color: #5c6bc0;
 }
 
-/* 3D Flip Polaroid Card */
 .polaroid-flip-card {
   perspective: 1000px;
   padding: 0 !important;
@@ -279,7 +265,7 @@ body {
   inset: 0;
   backface-visibility: hidden;
   border-radius: 6px;
-  padding: 16px 14px 20px;
+  padding: 16px 14px 18px;
   background-color: #fffdfa;
   background-image: 
     linear-gradient(rgba(180, 210, 240, 0.35) 1px, transparent 1px),
@@ -288,6 +274,7 @@ body {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .flip-back {
@@ -298,19 +285,50 @@ body {
   padding: 30px 24px;
 }
 
-.flip-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
+.flip-indicator {
+  align-self: center;
+  background: #ffe3eb;
+  border: 1px dashed #e63946;
+  border-radius: 20px;
+  padding: 4px 14px;
   cursor: pointer;
-  z-index: 5;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  margin-top: 4px;
+  box-shadow: 0 2px 6px rgba(230, 57, 70, 0.15);
+  animation: gentleBounce 2.5s infinite ease-in-out;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.flip-indicator:hover {
+  background: #ffd1dc;
+  transform: scale(1.05);
+}
+
+.flip-indicator span {
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+  font-weight: bold;
+  color: #c9182b;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+@keyframes gentleBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.corner-fold {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 22px 22px;
+  border-color: transparent transparent #e2e8f0 transparent;
+  pointer-events: none;
+  filter: drop-shadow(-1px -1px 2px rgba(0,0,0,0.1));
 }
 
 .img-wrapper {
@@ -323,7 +341,7 @@ body {
 
 .flip-front img {
   width: 100%;
-  height: 220px;
+  height: 200px;
   object-fit: cover;
   object-position: center top;
   display: block;
@@ -331,9 +349,9 @@ body {
 }
 
 .flip-front .caption {
-  margin-top: 12px;
-  font-size: clamp(23px, 5.2vw, 29px);
-  line-height: 1.2;
+  margin-top: 8px;
+  font-size: clamp(22px, 5vw, 27px);
+  line-height: 1.15;
 }
 
 .back-title {
@@ -347,9 +365,9 @@ body {
   font-size: 24px;
   line-height: 1.35;
   color: #2b2d42;
+  margin-bottom: 16px;
 }
 
-/* Scratch Card */
 .coupon-card {
   gap: 12px;
 }
@@ -408,7 +426,6 @@ body {
   color: #7b88a8;
 }
 
-/* Candle Card */
 .candle-card {
   gap: 14px;
 }
@@ -507,7 +524,6 @@ body {
   color: #5c6bc0;
 }
 
-/* Secret Heart Base */
 .paper.heart {
   border-radius: 6px;
   gap: 16px;
@@ -548,7 +564,6 @@ body {
   100% { transform: rotate(-45deg) scale(0.92); }
 }
 
-/* Trail Particles */
 .trail-particle {
   position: fixed;
   pointer-events: none;
@@ -563,7 +578,6 @@ body {
   100% { opacity: 0; transform: translate(-50%, -80px) scale(0.3) rotate(45deg); }
 }
 
-/* Typography */
 p {
   font-family: 'Zeyada', cursive, sans-serif;
   font-size: clamp(25px, 5.5vw, 33px);

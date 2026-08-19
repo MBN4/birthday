@@ -1,13 +1,11 @@
 import './style.css';
 
-// 👉 Put your secret page link here:
 const SECRET_URL = "https://example.com"; 
 
 const papers = Array.from(document.querySelectorAll('.paper'));
 let highestZ = papers.length + 10;
 let movedCardsCount = 0;
 
-// 1. Background Music Controller
 const bgMusic = document.getElementById('bgMusic');
 const musicToggle = document.getElementById('musicToggle');
 let isMusicStarted = false;
@@ -17,9 +15,7 @@ function playAudio() {
   bgMusic.play().then(() => {
     isMusicStarted = true;
     musicToggle?.classList.add('playing');
-  }).catch(() => {
-    // Autoplay prevented until user gesture
-  });
+  }).catch(() => {});
 }
 
 function toggleAudio(e) {
@@ -37,7 +33,6 @@ function toggleAudio(e) {
 
 musicToggle?.addEventListener('click', toggleAudio);
 
-// Automatically start music on the very first touch/click anywhere on screen
 const startAudioOnFirstInteraction = () => {
   if (!isMusicStarted) {
     playAudio();
@@ -48,7 +43,6 @@ const startAudioOnFirstInteraction = () => {
 window.addEventListener('click', startAudioOnFirstInteraction);
 window.addEventListener('touchstart', startAudioOnFirstInteraction, { passive: true });
 
-// 2. Splash Screen Dismissal
 window.addEventListener('load', () => {
   const splash = document.getElementById('splashScreen');
   if (splash) {
@@ -59,7 +53,6 @@ window.addEventListener('load', () => {
   }
 });
 
-// 3. Ambient Particles
 function createAmbientParticles() {
   const container = document.getElementById('ambientParticles');
   const symbols = ['🌸', '✨', '💖', '⭐', '🎈'];
@@ -76,7 +69,6 @@ function createAmbientParticles() {
 }
 createAmbientParticles();
 
-// 4. Sparkle Trail
 function spawnTrailParticle(x, y) {
   if (Math.random() > 0.4) return;
   const emojis = ['✨', '💖', '⭐', '🌸'];
@@ -89,7 +81,6 @@ function spawnTrailParticle(x, y) {
   setTimeout(() => p.remove(), 800);
 }
 
-// 5. Confetti & Balloons on Finale
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   const ctx = canvas.getContext('2d');
@@ -133,7 +124,6 @@ function launchConfetti() {
   }
   animate();
 
-  // Launch Balloons
   const bContainer = document.getElementById('balloonsContainer');
   const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe'];
   for (let i = 0; i < 18; i++) {
@@ -147,7 +137,6 @@ function launchConfetti() {
   }
 }
 
-// 6. Scratch Card Setup
 function setupScratchCard() {
   const canvas = document.getElementById('scratchCanvas');
   if (!canvas) return;
@@ -188,7 +177,6 @@ function setupScratchCard() {
 }
 setupScratchCard();
 
-// 7. Candle Flame Blow Out
 function setupCandle() {
   const container = document.getElementById('cakeContainer');
   const flame = document.getElementById('candleFlame');
@@ -211,8 +199,7 @@ function setupCandle() {
 }
 setupCandle();
 
-// 8. 3D Flip Polaroid
-document.querySelectorAll('.flip-btn').forEach((btn) => {
+document.querySelectorAll('.flip-indicator').forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
     const card = btn.closest('.polaroid-flip-card');
@@ -220,7 +207,6 @@ document.querySelectorAll('.flip-btn').forEach((btn) => {
   });
 });
 
-// 9. Draggable Paper Logic
 class Paper {
   holdingPaper = false;
   hasMovedSignificantly = false;
@@ -241,7 +227,7 @@ class Paper {
     const isHeart = paper.classList.contains('heart');
 
     const handleStart = (clientX, clientY, target) => {
-      if (target.closest('#scratchCanvas') || target.closest('.flip-btn') || target.closest('#cakeContainer')) {
+      if (target.closest('#scratchCanvas') || target.closest('.flip-indicator') || target.closest('#cakeContainer')) {
         return;
       }
       if (this.holdingPaper) return;
@@ -299,7 +285,6 @@ class Paper {
       }
     };
 
-    // Mouse Events
     paper.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
       handleStart(e.clientX, e.clientY, e.target);
@@ -308,7 +293,6 @@ class Paper {
     window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
     window.addEventListener('mouseup', (e) => handleEnd(e.clientX, e.clientY));
 
-    // Touch Events
     paper.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) return;
       handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
@@ -331,7 +315,6 @@ class Paper {
   }
 }
 
-// Initialize all cards
 papers.forEach((paper, index) => {
   const p = new Paper();
   p.init(paper, index);
