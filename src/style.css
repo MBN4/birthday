@@ -1,0 +1,158 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  
+  /* Instant Pure-CSS Graph Paper Texture */
+  background-color: #f6f9fc;
+  background-image: 
+    linear-gradient(#e2e8f0 1px, transparent 1px),
+    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center center;
+}
+
+/* Paper Base */
+.paper {
+  position: absolute;
+  width: clamp(280px, 85vw, 340px);
+  min-height: 330px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  /* Paper Texture Pattern */
+  background-color: #ffffff;
+  background-image: 
+    linear-gradient(rgba(200, 220, 240, 0.45) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 220, 240, 0.45) 1px, transparent 1px);
+  background-size: 16px 16px;
+  
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  will-change: transform;
+  text-align: center;
+}
+
+.paper:active {
+  cursor: grabbing;
+}
+
+/* Cover Card */
+.paper .title {
+  font-size: clamp(32px, 6.5vw, 42px);
+  color: #1a237e;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.paper .subtitle {
+  font-size: clamp(20px, 4.5vw, 24px);
+  color: #5c6bc0;
+}
+
+/* Image Cards */
+.paper.image {
+  padding: 18px 16px 20px;
+  justify-content: flex-start;
+}
+
+.img-wrapper {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.paper.image img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  pointer-events: none;
+}
+
+/* Secret Heart Base */
+.paper.heart {
+  width: clamp(250px, 72vw, 290px);
+  min-height: clamp(250px, 72vw, 290px);
+  height: clamp(250px, 72vw, 290px);
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.heart-icon {
+  width: 65px;
+  height: 65px;
+  background-color: #e63946;
+  position: relative;
+  transform: rotate(-45deg);
+  margin-top: -10px;
+  animation: pulse 1.3s infinite ease-in-out;
+}
+
+.heart-icon::before,
+.heart-icon::after {
+  content: "";
+  width: 65px;
+  height: 65px;
+  background-color: #e63946;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.heart-icon::before {
+  top: -32.5px;
+  left: 0;
+}
+
+.heart-icon::after {
+  left: 32.5px;
+  top: 0;
+}
+
+.heart-text {
+  font-size: clamp(22px, 5vw, 28px);
+  color: #c9182b;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% { transform: rotate(-45deg) scale(0.92); }
+  50% { transform: rotate(-45deg) scale(1.05); }
+  100% { transform: rotate(-45deg) scale(0.92); }
+}
+
+/* Text */
+p {
+  font-family: 'Zeyada', cursive, sans-serif;
+  font-size: clamp(25px, 5.5vw, 32px);
+  line-height: 1.25;
+  color: #1a237e;
+  user-select: none;
+  pointer-events: none;
+}
