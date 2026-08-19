@@ -22,110 +22,7 @@ body {
   background-position: center center;
 }
 
-/* =========================================
-   🌸 SPLASH SCREEN ANIMATION (LILIES)
-   ========================================= */
-.splash-screen {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at center, #ffffff 0%, #f4f8fb 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-}
-
-.splash-screen.fade-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.splash-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Lilies Rise and Bloom Animation */
-.lily-container {
-  width: 180px;
-  height: 220px;
-  animation: lilyRiseFromBottom 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes lilyRiseFromBottom {
-  0% {
-    transform: translateY(120px) scale(0.6);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.lily-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.lily-stem {
-  fill: none;
-  stroke: #70a07a;
-  stroke-width: 4;
-  stroke-linecap: round;
-}
-
-.lily-leaf {
-  fill: #88b792;
-  opacity: 0.9;
-}
-
-/* Lily Petals (Soft pink white gradients) */
-.petal.back {
-  fill: #ffe3eb;
-  stroke: #f7cad9;
-  stroke-width: 1;
-}
-
-.petal.front {
-  fill: #fff0f5;
-  stroke: #fcd5e2;
-  stroke-width: 1;
-}
-
-.petal.center {
-  fill: #ffffff;
-  stroke: #fcd5e2;
-  stroke-width: 1;
-}
-
-.splash-text {
-  font-family: 'Great Vibes', cursive, sans-serif;
-  font-size: clamp(28px, 6vw, 36px);
-  color: #c75c7a;
-  margin-top: 15px;
-  opacity: 0;
-  animation: fadeInText 1.2s ease forwards 0.8s;
-}
-
-@keyframes fadeInText {
-  to {
-    opacity: 1;
-    transform: translateY(-5px);
-  }
-}
-
-/* =========================================
-   AMBIENT BACKGROUND PARTICLES
-   ========================================= */
+/* Ambient Particles */
 .ambient-particles {
   position: absolute;
   inset: 0;
@@ -158,6 +55,39 @@ body {
   z-index: 9999;
 }
 
+/* Finale Floating Balloons */
+.balloons-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+}
+
+.balloon {
+  position: absolute;
+  bottom: -100px;
+  width: 50px;
+  height: 65px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  animation: floatBalloon 6s ease-in forwards;
+}
+
+.balloon::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 24px;
+  width: 2px;
+  height: 25px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+@keyframes floatBalloon {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-115vh) rotate(20deg); opacity: 0.9; }
+}
+
 .stack-container {
   position: relative;
   display: flex;
@@ -167,9 +97,7 @@ body {
   height: 100%;
 }
 
-/* =========================================
-   PAPER CARDS
-   ========================================= */
+/* Base Paper */
 .paper {
   position: absolute;
   width: clamp(290px, 86vw, 350px);
@@ -186,7 +114,7 @@ body {
     linear-gradient(90deg, rgba(180, 210, 240, 0.35) 1px, transparent 1px);
   background-size: 18px 18px;
   
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05);
   cursor: grab;
   user-select: none;
@@ -244,15 +172,63 @@ body {
   color: #5c6bc0;
 }
 
-.paper.note {
-  gap: 8px;
+/* 3D Flip Polaroid Card */
+.polaroid-flip-card {
+  perspective: 1000px;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-/* Polaroid Card */
-.paper.polaroid {
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.polaroid-flip-card.flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-front, .flip-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 6px;
   padding: 16px 14px 20px;
   background-color: #fffdfa;
-  justify-content: flex-start;
+  background-image: 
+    linear-gradient(rgba(180, 210, 240, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 210, 240, 0.35) 1px, transparent 1px);
+  background-size: 18px 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+  background-color: #fdfbf7;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 24px;
+}
+
+.flip-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .img-wrapper {
@@ -263,7 +239,7 @@ body {
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.paper.polaroid img {
+.flip-front img {
   width: 100%;
   height: 220px;
   object-fit: cover;
@@ -272,10 +248,185 @@ body {
   pointer-events: none;
 }
 
-.paper.polaroid .caption {
+.flip-front .caption {
   margin-top: 12px;
   font-size: clamp(23px, 5.2vw, 29px);
   line-height: 1.2;
+}
+
+.back-title {
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  color: #e63946;
+  margin-bottom: 10px;
+}
+
+.back-text {
+  font-size: 24px;
+  line-height: 1.35;
+  color: #2b2d42;
+}
+
+/* =========================================
+   🎫 SCRATCH-OFF CARD STYLES
+   ========================================= */
+.coupon-card {
+  gap: 12px;
+}
+
+.coupon-header {
+  font-family: 'Caveat', cursive;
+  font-size: 28px;
+  color: #c75c7a;
+  font-weight: bold;
+}
+
+.scratch-container {
+  position: relative;
+  width: 260px;
+  height: 130px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.scratch-reward {
+  position: absolute;
+  inset: 0;
+  background: #fff8eb;
+  border: 2px dashed #f4a261;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.reward-title {
+  font-family: 'Caveat', cursive;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #e76f51;
+}
+
+.reward-content {
+  font-size: 22px;
+  color: #264653;
+  line-height: 1.2;
+}
+
+#scratchCanvas {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.scratch-hint {
+  font-size: 20px;
+  color: #7b88a8;
+}
+
+/* =========================================
+   🕯️ MAKE A WISH CANDLE CARD STYLES
+   ========================================= */
+.candle-card {
+  gap: 14px;
+}
+
+.candle-title {
+  font-size: clamp(26px, 5.5vw, 32px);
+  color: #e76f51;
+}
+
+.cake-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.candle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flame {
+  width: 16px;
+  height: 24px;
+  background: radial-gradient(ellipse at bottom, #ffd166 0%, #ff6b6b 80%);
+  border-radius: 50% 50% 35% 35%;
+  animation: flicker 0.8s infinite ease-in-out alternate;
+  cursor: pointer;
+  filter: drop-shadow(0 0 8px #ffd166);
+}
+
+@keyframes flicker {
+  0% { transform: scale(1) rotate(-2deg); }
+  100% { transform: scale(1.15) rotate(2deg); }
+}
+
+.flame.blown-out {
+  display: none;
+}
+
+.smoke {
+  display: none;
+  width: 10px;
+  height: 20px;
+  background: rgba(180, 180, 180, 0.6);
+  border-radius: 50%;
+  animation: puff 1.2s forwards ease-out;
+}
+
+@keyframes puff {
+  0% { opacity: 0.8; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(2.5); }
+}
+
+.wick {
+  width: 2px;
+  height: 6px;
+  background: #333;
+}
+
+.candle-stick {
+  width: 10px;
+  height: 36px;
+  background: repeating-linear-gradient(45deg, #ff9a9e, #ff9a9e 4px, #ffffff 4px, #ffffff 8px);
+  border-radius: 3px;
+}
+
+.cupcake {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.frosting {
+  width: 70px;
+  height: 35px;
+  background: #ffe3eb;
+  border-radius: 50px 50px 10px 10px;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.cupcake-base {
+  width: 50px;
+  height: 30px;
+  background: #e9c46a;
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+}
+
+.wish-message {
+  font-size: 22px;
+  color: #5c6bc0;
 }
 
 /* Secret Heart Base */
@@ -319,7 +470,7 @@ body {
   100% { transform: rotate(-45deg) scale(0.92); }
 }
 
-/* Drag Sparks */
+/* Trail particle */
 .trail-particle {
   position: fixed;
   pointer-events: none;

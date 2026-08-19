@@ -7,18 +7,18 @@ const papers = Array.from(document.querySelectorAll('.paper'));
 let highestZ = papers.length + 10;
 let movedCardsCount = 0;
 
-// 1. Splash Screen Dismissal after Lily bloom animation
+// 1. Splash Screen Dismissal
 window.addEventListener('load', () => {
   const splash = document.getElementById('splashScreen');
   if (splash) {
     setTimeout(() => {
       splash.classList.add('fade-out');
       setTimeout(() => splash.remove(), 900);
-    }, 2400); // 2.4s display time
+    }, 2400);
   }
 });
 
-// 2. Ambient floating particles in background
+// 2. Ambient Particles
 function createAmbientParticles() {
   const container = document.getElementById('ambientParticles');
   const symbols = ['🌸', '✨', '💖', '⭐', '🎈'];
@@ -35,7 +35,7 @@ function createAmbientParticles() {
 }
 createAmbientParticles();
 
-// 3. Interactive Sparkle Trail while dragging
+// 3. Sparkle Trail
 function spawnTrailParticle(x, y) {
   if (Math.random() > 0.4) return;
   const emojis = ['✨', '💖', '⭐', '🌸'];
@@ -48,18 +48,18 @@ function spawnTrailParticle(x, y) {
   setTimeout(() => p.remove(), 800);
 }
 
-// 4. Confetti Cannon Effect
+// 4. Confetti & Balloons on Finale
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const confettiPieces = Array.from({ length: 90 }).map(() => ({
+  const confettiPieces = Array.from({ length: 100 }).map(() => ({
     x: canvas.width / 2,
     y: canvas.height / 2,
-    vx: (Math.random() - 0.5) * 16,
-    vy: (Math.random() - 0.7) * 18,
+    vx: (Math.random() - 0.5) * 18,
+    vy: (Math.random() - 0.7) * 20,
     size: Math.random() * 8 + 4,
     color: ['#ff4d6d', '#ff758f', '#ffb3c1', '#ffd166', '#06d6a0', '#118ab2'][Math.floor(Math.random() * 6)],
     rotation: Math.random() * 360,
@@ -67,7 +67,7 @@ function launchConfetti() {
   }));
 
   let frame = 0;
-  function animateConfetti() {
+  function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     confettiPieces.forEach((p) => {
       p.x += p.vx;
@@ -84,16 +84,103 @@ function launchConfetti() {
     });
 
     frame++;
-    if (frame < 120) {
-      requestAnimationFrame(animateConfetti);
+    if (frame < 140) {
+      requestAnimationFrame(animate);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
   }
-  animateConfetti();
+  animate();
+
+  // Launch Balloons
+  const bContainer = document.getElementById('balloonsContainer');
+  const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe'];
+  for (let i = 0; i < 18; i++) {
+    const balloon = document.createElement('div');
+    balloon.className = 'balloon';
+    balloon.style.left = `${Math.random() * 95}vw`;
+    balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    balloon.style.animationDelay = `${Math.random() * 1.5}s`;
+    balloon.style.animationDuration = `${5 + Math.random() * 3}s`;
+    bContainer.appendChild(balloon);
+  }
 }
 
-// 5. Draggable Paper Class
+// 5. Setup Scratch Card Canvas
+function setupScratchCard() {
+  const canvas = document.getElementById('scratchCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  // Fill with Gold Foil Pattern
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#e5c07b');
+  grad.addColorStop(0.5, '#ffd700');
+  grad.addColorStop(1, '#d4af37');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#6d4c41';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('✨ Scratch to Reveal! ✨', canvas.width / 2, canvas.height / 2 + 5);
+
+  let isScratching = false;
+
+  const scratch = (clientX, clientY) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  canvas.addEventListener('mousedown', (e) => { isScratching = true; scratch(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', (e) => { if (isScratching) scratch(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', () => { isScratching = false; });
+
+  canvas.addEventListener('touchstart', (e) => { isScratching = true; scratch(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  canvas.addEventListener('touchmove', (e) => { if (isScratching) scratch(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  window.addEventListener('touchend', () => { isScratching = false; });
+}
+setupScratchCard();
+
+// 6. Interactive Birthday Candle Flame Blow-Out
+function setupCandle() {
+  const container = document.getElementById('cakeContainer');
+  const flame = document.getElementById('candleFlame');
+  const smoke = document.getElementById('candleSmoke');
+  const msg = document.getElementById('wishMessage');
+  const title = document.getElementById('candleTitle');
+
+  if (!container || !flame) return;
+
+  container.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!flame.classList.contains('blown-out')) {
+      flame.classList.add('blown-out');
+      smoke.style.display = 'block';
+      title.innerText = "Wish Granted! ✨🎂";
+      msg.innerText = "May all your dreams come true! 💖";
+      launchConfetti();
+    }
+  });
+}
+setupCandle();
+
+// 7. Setup 3D Flip on Polaroid Buttons
+document.querySelectorAll('.flip-btn').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const card = btn.closest('.polaroid-flip-card');
+    card.classList.toggle('flipped');
+  });
+});
+
+// 8. Draggable Paper Logic
 class Paper {
   holdingPaper = false;
   hasMovedSignificantly = false;
@@ -113,7 +200,11 @@ class Paper {
 
     const isHeart = paper.classList.contains('heart');
 
-    const handleStart = (clientX, clientY) => {
+    const handleStart = (clientX, clientY, target) => {
+      // Don't drag paper if interacting with scratch canvas or flip button
+      if (target.closest('#scratchCanvas') || target.closest('.flip-btn') || target.closest('#cakeContainer')) {
+        return;
+      }
       if (this.holdingPaper) return;
       this.holdingPaper = true;
       this.hasMovedSignificantly = false;
@@ -153,7 +244,6 @@ class Paper {
 
       const distanceMoved = Math.hypot(endX - this.startX, endY - this.startY);
 
-      // Track cards moved to celebrate at the end
       if (distanceMoved > 60 && !this.hasMovedSignificantly) {
         this.hasMovedSignificantly = true;
         movedCardsCount++;
@@ -171,26 +261,24 @@ class Paper {
       }
     };
 
-    // Mouse Events
+    // Mouse
     paper.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
-      handleStart(e.clientX, e.clientY);
+      handleStart(e.clientX, e.clientY, e.target);
     });
 
     window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
     window.addEventListener('mouseup', (e) => handleEnd(e.clientX, e.clientY));
 
-    // Touch Events (Mobile)
+    // Touch
     paper.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) return;
-      const t = e.touches[0];
-      handleStart(t.clientX, t.clientY);
+      handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
       if (!this.holdingPaper) return;
-      const t = e.touches[0];
-      handleMove(t.clientX, t.clientY);
+      handleMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
     window.addEventListener('touchend', (e) => {

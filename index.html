@@ -8,9 +8,9 @@
   <!-- Preconnect & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Zeyada&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Zeyada&family=Great+Vibes&display=swap" rel="stylesheet">
 
-  <!-- Critical Splash Screen Styles (Eliminates the black flower flash instantly) -->
+  <!-- Splash Screen Critical Styles (Instant Loading) -->
   <style>
     .splash-screen {
       position: fixed;
@@ -22,22 +22,9 @@
       z-index: 99999;
       transition: opacity 0.8s ease, visibility 0.8s ease;
     }
-    .splash-screen.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    .splash-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .lily-container {
-      width: 170px;
-      height: 210px;
-      animation: lilyRise 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
+    .splash-screen.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+    .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .lily-container { width: 170px; height: 210px; animation: lilyRise 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     @keyframes lilyRise {
       0% { transform: translateY(100px) scale(0.6); opacity: 0; }
       50% { opacity: 1; }
@@ -51,25 +38,19 @@
       opacity: 0;
       animation: fadeInSplashText 1.2s ease forwards 0.8s;
     }
-    @keyframes fadeInSplashText {
-      to { opacity: 1; transform: translateY(-5px); }
-    }
+    @keyframes fadeInSplashText { to { opacity: 1; transform: translateY(-5px); } }
   </style>
 </head>
 <body>
 
-  <!-- 🌸 Splash Screen with Colored Lilies -->
+  <!-- 🌸 Splash Screen -->
   <div class="splash-screen" id="splashScreen">
     <div class="splash-content">
-      
       <div class="lily-container">
         <svg class="lily-svg" viewBox="0 0 200 240" width="170" height="210" xmlns="http://www.w3.org/2000/svg">
-          <!-- Stems -->
           <path d="M100,230 Q95,160 100,100" fill="none" stroke="#70a07a" stroke-width="4" stroke-linecap="round"/>
           <path d="M100,230 Q70,170 65,115" fill="none" stroke="#70a07a" stroke-width="4" stroke-linecap="round"/>
           <path d="M100,230 Q130,170 135,115" fill="none" stroke="#70a07a" stroke-width="4" stroke-linecap="round"/>
-          
-          <!-- Leaves -->
           <path d="M96,170 Q60,165 50,145 Q75,145 94,160 Z" fill="#88b792"/>
           <path d="M104,180 Q140,175 150,155 Q125,155 106,170 Z" fill="#88b792"/>
 
@@ -99,7 +80,7 @@
             <circle cx="5" cy="-35" r="2.5" fill="#f4a261"/>
           </g>
 
-          <!-- Center Main Flower -->
+          <!-- Center Flower -->
           <g transform="translate(100,100) scale(0.95)">
             <ellipse cx="-32" cy="-32" rx="18" ry="42" transform="rotate(-40)" fill="#ffe3eb" stroke="#f7cad9"/>
             <ellipse cx="32" cy="-32" rx="18" ry="42" transform="rotate(40)" fill="#ffe3eb" stroke="#f7cad9"/>
@@ -114,16 +95,18 @@
           </g>
         </svg>
       </div>
-
       <p class="splash-text">A special gift for Esha 🌸</p>
     </div>
   </div>
 
-  <!-- Ambient Floating Background Particles -->
+  <!-- Ambient Particles -->
   <div class="ambient-particles" id="ambientParticles"></div>
 
-  <!-- Canvas for Confetti -->
+  <!-- Confetti Canvas -->
   <canvas id="confettiCanvas"></canvas>
+
+  <!-- Balloons Container (For Finale) -->
+  <div class="balloons-container" id="balloonsContainer"></div>
 
   <div class="stack-container">
     
@@ -134,49 +117,104 @@
       <p class="heart-text">Happy Birthday Esha! 🎂❤️</p>
     </div>
 
-    <!-- 2. Photo Card 1 -->
-    <div class="paper image polaroid">
+    <!-- 2. Photo Card 1 (With 3D Flip to write on back) -->
+    <div class="paper polaroid-flip-card">
       <div class="tape tape-top-right"></div>
-      <div class="img-wrapper">
-        <img src="/images/1.jpeg" alt="Esha" draggable="false" />
+      <div class="flip-inner">
+        <div class="flip-front">
+          <button class="flip-btn" title="Flip photo">🔄</button>
+          <div class="img-wrapper">
+            <img src="/images/1.jpeg" alt="Esha" draggable="false" />
+          </div>
+          <p class="caption">Happy Birthday to my favorite person 😍</p>
+        </div>
+        <div class="flip-back">
+          <button class="flip-btn" title="Flip back">🔄</button>
+          <p class="back-title">A Special Memory 💫</p>
+          <p class="back-text">"Every memory with you is a treasure I cherish forever. Keep shining always!" ✨</p>
+        </div>
       </div>
-      <p class="caption">Happy Birthday to my favorite person in the world 😍</p>
     </div>
 
-    <!-- 3. Photo Card 2 -->
-    <div class="paper image polaroid">
+    <!-- 3. Scratch-Off Birthday Coupon Card -->
+    <div class="paper coupon-card">
       <div class="tape tape-top-left"></div>
-      <div class="img-wrapper">
-        <img src="/images/2.jpeg" alt="Esha" draggable="false" />
+      <p class="coupon-header">🎟️ Birthday Scratch Card 🎟️</p>
+      <div class="scratch-container">
+        <div class="scratch-reward">
+          <p class="reward-title">VALID FOR:</p>
+          <p class="reward-content">1 Free Dinner Date & Ice Cream of your choice! 🍨✨</p>
+        </div>
+        <canvas id="scratchCanvas" width="260" height="130"></canvas>
       </div>
-      <p class="caption">May your smile always shine this bright ✨</p>
+      <p class="scratch-hint">Scratch the gold foil with your finger/mouse ✨</p>
     </div>
 
-    <!-- 4. Photo Card 3 -->
-    <div class="paper image polaroid">
+    <!-- 4. Photo Card 2 (With 3D Flip) -->
+    <div class="paper polaroid-flip-card">
+      <div class="tape tape-top-left"></div>
+      <div class="flip-inner">
+        <div class="flip-front">
+          <button class="flip-btn" title="Flip photo">🔄</button>
+          <div class="img-wrapper">
+            <img src="/images/2.jpeg" alt="Esha" draggable="false" />
+          </div>
+          <p class="caption">May your smile always shine this bright ✨</p>
+        </div>
+        <div class="flip-back">
+          <button class="flip-btn" title="Flip back">🔄</button>
+          <p class="back-title">Sweet Note 🌸</p>
+          <p class="back-text">"Your happiness is genuinely contagious. Never lose that bright smile!" 🥰</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Interactive "Make a Wish" Candle Card -->
+    <div class="paper candle-card" id="candleCard">
       <div class="tape tape-center"></div>
-      <div class="img-wrapper">
-        <img src="/images/3.jpg" alt="Esha" draggable="false" />
+      <p class="candle-title" id="candleTitle">Make a Wish & Tap the Flame! 🕯️</p>
+      <div class="cake-container" id="cakeContainer">
+        <div class="candle">
+          <div class="flame" id="candleFlame"></div>
+          <div class="smoke" id="candleSmoke"></div>
+          <div class="wick"></div>
+          <div class="candle-stick"></div>
+        </div>
+        <div class="cupcake">
+          <div class="frosting"></div>
+          <div class="cupcake-base"></div>
+        </div>
       </div>
-      <p class="caption">Another year of you being absolutely adorable 🥰</p>
+      <p class="wish-message" id="wishMessage">Tap to blow out the candle 💨</p>
     </div>
 
-    <!-- 5. Birthday Note 1 -->
-    <div class="paper note">
-      <div class="tape tape-top-left"></div>
-      <p>Wishing you endless joy,</p>
-      <p>lots of love & laughter,</p>
-      <p>and all your biggest dreams coming true! 💫</p>
+    <!-- 6. Photo Card 3 (With 3D Flip) -->
+    <div class="paper polaroid-flip-card">
+      <div class="tape tape-center"></div>
+      <div class="flip-inner">
+        <div class="flip-front">
+          <button class="flip-btn" title="Flip photo">🔄</button>
+          <div class="img-wrapper">
+            <img src="/images/3.jpg" alt="Esha" draggable="false" />
+          </div>
+          <p class="caption">Another year of you being adorable 🥰</p>
+        </div>
+        <div class="flip-back">
+          <button class="flip-btn" title="Flip back">🔄</button>
+          <p class="back-title">Forever Cute 💖</p>
+          <p class="back-text">"You make everything so much brighter just by being yourself." 🌸</p>
+        </div>
+      </div>
     </div>
 
-    <!-- 6. Birthday Note 2 -->
+    <!-- 7. Birthday Note -->
     <div class="paper note">
       <div class="tape tape-top-right"></div>
       <p>Hey Birthday Girl 👑</p>
       <p>Today is all about celebrating YOU <span class="heart-emoji">❤️</span></p>
     </div>
 
-    <!-- 7. Top Card (Cover / Instructions) -->
+    <!-- 8. Top Cover Card -->
     <div class="paper cover">
       <div class="tape tape-center"></div>
       <span class="stamp">SPECIAL DELIVERY 💌</span>
