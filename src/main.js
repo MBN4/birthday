@@ -7,7 +7,48 @@ const papers = Array.from(document.querySelectorAll('.paper'));
 let highestZ = papers.length + 10;
 let movedCardsCount = 0;
 
-// 1. Splash Screen Dismissal
+// 1. Background Music Controller
+const bgMusic = document.getElementById('bgMusic');
+const musicToggle = document.getElementById('musicToggle');
+let isMusicStarted = false;
+
+function playAudio() {
+  if (!bgMusic) return;
+  bgMusic.play().then(() => {
+    isMusicStarted = true;
+    musicToggle?.classList.add('playing');
+  }).catch(() => {
+    // Autoplay prevented until user gesture
+  });
+}
+
+function toggleAudio(e) {
+  e?.stopPropagation();
+  if (!bgMusic) return;
+
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicToggle?.classList.add('playing');
+  } else {
+    bgMusic.pause();
+    musicToggle?.classList.remove('playing');
+  }
+}
+
+musicToggle?.addEventListener('click', toggleAudio);
+
+// Automatically start music on the very first touch/click anywhere on screen
+const startAudioOnFirstInteraction = () => {
+  if (!isMusicStarted) {
+    playAudio();
+  }
+  window.removeEventListener('click', startAudioOnFirstInteraction);
+  window.removeEventListener('touchstart', startAudioOnFirstInteraction);
+};
+window.addEventListener('click', startAudioOnFirstInteraction);
+window.addEventListener('touchstart', startAudioOnFirstInteraction, { passive: true });
+
+// 2. Splash Screen Dismissal
 window.addEventListener('load', () => {
   const splash = document.getElementById('splashScreen');
   if (splash) {
@@ -18,7 +59,7 @@ window.addEventListener('load', () => {
   }
 });
 
-// 2. Ambient Particles
+// 3. Ambient Particles
 function createAmbientParticles() {
   const container = document.getElementById('ambientParticles');
   const symbols = ['🌸', '✨', '💖', '⭐', '🎈'];
@@ -35,7 +76,7 @@ function createAmbientParticles() {
 }
 createAmbientParticles();
 
-// 3. Sparkle Trail
+// 4. Sparkle Trail
 function spawnTrailParticle(x, y) {
   if (Math.random() > 0.4) return;
   const emojis = ['✨', '💖', '⭐', '🌸'];
@@ -48,7 +89,7 @@ function spawnTrailParticle(x, y) {
   setTimeout(() => p.remove(), 800);
 }
 
-// 4. Confetti & Balloons on Finale
+// 5. Confetti & Balloons on Finale
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   const ctx = canvas.getContext('2d');
@@ -106,13 +147,12 @@ function launchConfetti() {
   }
 }
 
-// 5. Setup Scratch Card Canvas
+// 6. Scratch Card Setup
 function setupScratchCard() {
   const canvas = document.getElementById('scratchCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   
-  // Fill with Gold Foil Pattern
   const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   grad.addColorStop(0, '#e5c07b');
   grad.addColorStop(0.5, '#ffd700');
@@ -148,7 +188,7 @@ function setupScratchCard() {
 }
 setupScratchCard();
 
-// 6. Interactive Birthday Candle Flame Blow-Out
+// 7. Candle Flame Blow Out
 function setupCandle() {
   const container = document.getElementById('cakeContainer');
   const flame = document.getElementById('candleFlame');
@@ -171,7 +211,7 @@ function setupCandle() {
 }
 setupCandle();
 
-// 7. Setup 3D Flip on Polaroid Buttons
+// 8. 3D Flip Polaroid
 document.querySelectorAll('.flip-btn').forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -180,7 +220,7 @@ document.querySelectorAll('.flip-btn').forEach((btn) => {
   });
 });
 
-// 8. Draggable Paper Logic
+// 9. Draggable Paper Logic
 class Paper {
   holdingPaper = false;
   hasMovedSignificantly = false;
@@ -201,7 +241,6 @@ class Paper {
     const isHeart = paper.classList.contains('heart');
 
     const handleStart = (clientX, clientY, target) => {
-      // Don't drag paper if interacting with scratch canvas or flip button
       if (target.closest('#scratchCanvas') || target.closest('.flip-btn') || target.closest('#cakeContainer')) {
         return;
       }
@@ -252,7 +291,6 @@ class Paper {
         }
       }
 
-      // Secret click redirect on clean heart tap
       if (isHeart && distanceMoved < 10) {
         launchConfetti();
         setTimeout(() => {
@@ -261,7 +299,7 @@ class Paper {
       }
     };
 
-    // Mouse
+    // Mouse Events
     paper.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
       handleStart(e.clientX, e.clientY, e.target);
@@ -270,7 +308,7 @@ class Paper {
     window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
     window.addEventListener('mouseup', (e) => handleEnd(e.clientX, e.clientY));
 
-    // Touch
+    // Touch Events
     paper.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) return;
       handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);

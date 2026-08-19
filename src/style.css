@@ -22,6 +22,88 @@ body {
   background-position: center center;
 }
 
+/* =========================================
+   🎵 FLOATING VINYL MUSIC PLAYER
+   ========================================= */
+.music-toggle-btn {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.music-toggle-btn:active {
+  transform: scale(0.92);
+}
+
+.vinyl-disc {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle,
+    #111,
+    #111 2px,
+    #2a2a2a 3px,
+    #111 4px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.vinyl-center {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff758f;
+  border: 2px solid #ffffff;
+}
+
+/* When playing: Spin smoothly */
+.music-toggle-btn.playing .vinyl-disc {
+  animation: spinVinyl 3.5s linear infinite;
+}
+
+@keyframes spinVinyl {
+  100% { transform: rotate(360deg); }
+}
+
+/* Floating musical notes */
+.music-note {
+  position: absolute;
+  color: #ff4d6d;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.music-toggle-btn.playing .music-note.n1 {
+  animation: floatNote 2s infinite ease-out;
+}
+
+.music-toggle-btn.playing .music-note.n2 {
+  animation: floatNote 2s infinite ease-out 1s;
+}
+
+@keyframes floatNote {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translate(-18px, -24px) scale(1.1); opacity: 0; }
+}
+
 /* Ambient Particles */
 .ambient-particles {
   position: absolute;
@@ -55,7 +137,7 @@ body {
   z-index: 9999;
 }
 
-/* Finale Floating Balloons */
+/* Balloons */
 .balloons-container {
   position: fixed;
   inset: 0;
@@ -267,9 +349,7 @@ body {
   color: #2b2d42;
 }
 
-/* =========================================
-   🎫 SCRATCH-OFF CARD STYLES
-   ========================================= */
+/* Scratch Card */
 .coupon-card {
   gap: 12px;
 }
@@ -328,9 +408,7 @@ body {
   color: #7b88a8;
 }
 
-/* =========================================
-   🕯️ MAKE A WISH CANDLE CARD STYLES
-   ========================================= */
+/* Candle Card */
 .candle-card {
   gap: 14px;
 }
@@ -470,7 +548,7 @@ body {
   100% { transform: rotate(-45deg) scale(0.92); }
 }
 
-/* Trail particle */
+/* Trail Particles */
 .trail-particle {
   position: fixed;
   pointer-events: none;
