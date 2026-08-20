@@ -212,6 +212,119 @@ function launchConfetti() {
   }
 }
 
+function setupBottle() {
+  const cork = document.getElementById('bottleCork');
+  const bottle = document.getElementById('glassBottle');
+  const scroll = document.getElementById('scrollUnrolled');
+  const hint = document.getElementById('bottleHint');
+
+  if (!cork || !bottle || !scroll) return;
+
+  let isUncorked = false;
+
+  const uncork = (e) => {
+    e.stopPropagation();
+    if (!isUncorked) {
+      isUncorked = true;
+      cork.classList.add('popped');
+      setTimeout(() => {
+        scroll.classList.add('show');
+        if (hint) hint.innerText = "✨ Read your ocean message ✨";
+        launchConfetti();
+      }, 350);
+    } else {
+      scroll.classList.toggle('show');
+    }
+  };
+
+  cork.addEventListener('click', uncork);
+  bottle.addEventListener('click', uncork);
+}
+setupBottle();
+
+function setupPowerMeter() {
+  const btn = document.getElementById('chargeBtn');
+  const needle = document.getElementById('gaugeNeedle');
+  const val = document.getElementById('gaugeValue');
+  const status = document.getElementById('gaugeStatus');
+
+  if (!btn || !needle || !val || !status) return;
+
+  let charge = 0;
+  let chargeInterval = null;
+  let isMaxed = false;
+
+  const statuses = [
+    { threshold: 0, text: "Status: Resting Power ✨" },
+    { threshold: 25, text: "Status: Dangerously Cute 🥰" },
+    { threshold: 55, text: "Status: Radiant Energy 🌟" },
+    { threshold: 85, text: "Status: Absolute Slay 💅" },
+    { threshold: 100, text: "Status: 👑 QUEEN LEVEL OVERLOAD 👑" }
+  ];
+
+  const updateUI = () => {
+    const angle = -90 + (charge / 100) * 180;
+    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    val.innerText = `${Math.floor(charge)}%`;
+
+    for (let i = statuses.length - 1; i >= 0; i--) {
+      if (charge >= statuses[i].threshold) {
+        status.innerText = statuses[i].text;
+        break;
+      }
+    }
+
+    if (charge >= 100 && !isMaxed) {
+      isMaxed = true;
+      btn.innerText = "👑 1000% QUEEN POWER UNLOCKED! ✨";
+      btn.classList.add('maxed');
+      btn.classList.remove('charging');
+      val.innerText = "OVER 9000%! 💥";
+      launchConfetti();
+      clearInterval(chargeInterval);
+    }
+  };
+
+  const startCharging = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (isMaxed) return;
+
+    btn.classList.add('charging');
+    clearInterval(chargeInterval);
+    chargeInterval = setInterval(() => {
+      if (charge < 100) {
+        charge += 2.5;
+        updateUI();
+      }
+    }, 50);
+  };
+
+  const stopCharging = (e) => {
+    e.stopPropagation();
+    if (isMaxed) return;
+
+    btn.classList.remove('charging');
+    clearInterval(chargeInterval);
+    chargeInterval = setInterval(() => {
+      if (charge > 0) {
+        charge -= 3.5;
+        if (charge < 0) charge = 0;
+        updateUI();
+      } else {
+        clearInterval(chargeInterval);
+      }
+    }, 40);
+  };
+
+  btn.addEventListener('mousedown', startCharging);
+  window.addEventListener('mouseup', stopCharging);
+
+  btn.addEventListener('touchstart', startCharging, { passive: false });
+  window.addEventListener('touchend', stopCharging);
+}
+setupPowerMeter();
+
 function setupCakeDecor() {
   const cake = document.getElementById('bigCake');
   const slice = document.getElementById('cakeSlice');
@@ -593,7 +706,10 @@ class Paper {
         target.closest('#letterPaper') ||
         target.closest('#uvBoard') ||
         target.closest('#toppingsBar') ||
-        target.closest('#cutCakeBtn')
+        target.closest('#cutCakeBtn') ||
+        target.closest('#chargeBtn') ||
+        target.closest('#glassBottle') ||
+        target.closest('#scrollUnrolled')
       ) {
         return;
       }
