@@ -103,6 +103,67 @@ function spawnTrailParticle(x, y) {
   setTimeout(() => p.remove(), 800);
 }
 
+function spawnBalloon(customLeft = null, customDelay = 0) {
+  const bContainer = document.getElementById('balloonsContainer');
+  if (!bContainer) return;
+
+  const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe', '#ff99c8'];
+  const balloon = document.createElement('div');
+  balloon.className = 'balloon';
+  balloon.style.left = customLeft !== null ? `${customLeft}vw` : `${Math.random() * 90}vw`;
+  balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+  balloon.style.animationDelay = `${customDelay}s`;
+  balloon.style.animationDuration = `${5.5 + Math.random() * 2.5}s`;
+
+  const popBalloon = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (balloon.classList.contains('popping')) return;
+    
+    balloon.classList.add('popping');
+    const rect = balloon.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const emojis = ['✨', '💖', '⭐', '🎉', '🌸'];
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('div');
+      p.className = 'pop-particle';
+      p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      p.style.left = `${cx}px`;
+      p.style.top = `${cy}px`;
+      const angle = (Math.PI * 2 / 6) * i;
+      const dist = 30 + Math.random() * 25;
+      p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 600);
+    }
+
+    setTimeout(() => {
+      balloon.remove();
+    }, 150);
+  };
+
+  balloon.addEventListener('mousedown', popBalloon);
+  balloon.addEventListener('touchstart', popBalloon, { passive: false });
+
+  balloon.addEventListener('animationend', () => {
+    balloon.remove();
+  });
+
+  bContainer.appendChild(balloon);
+}
+
+function startAmbientBalloons() {
+  setInterval(() => {
+    if (document.querySelectorAll('.balloon').length < 6) {
+      spawnBalloon();
+    }
+  }, 3500);
+}
+startAmbientBalloons();
+
 function launchConfetti() {
   const canvas = document.getElementById('confettiCanvas');
   const ctx = canvas.getContext('2d');
@@ -146,18 +207,69 @@ function launchConfetti() {
   }
   animate();
 
-  const bContainer = document.getElementById('balloonsContainer');
-  const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe'];
   for (let i = 0; i < 15; i++) {
-    const balloon = document.createElement('div');
-    balloon.className = 'balloon';
-    balloon.style.left = `${Math.random() * 92}vw`;
-    balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    balloon.style.animationDelay = `${Math.random() * 1.2}s`;
-    balloon.style.animationDuration = `${5 + Math.random() * 2.5}s`;
-    bContainer.appendChild(balloon);
+    spawnBalloon(Math.random() * 92, Math.random() * 1.2);
   }
 }
+
+function setupFortuneCookie() {
+  const cookie = document.getElementById('fortuneCookie');
+  const paper = document.getElementById('fortunePaper');
+  const text = document.getElementById('fortuneText');
+  const btn = document.getElementById('cookieActionBtn');
+
+  if (!cookie || !paper || !btn) return;
+
+  const compliments = [
+    "Wow how lucky! The stars say you owe MBN a brand new PS5! 🎮✨",
+    "Officially 25! Your quarter-life crisis subscription is now active! 👵🎂",
+    "You’re not 25... you’re 18 with 7 years of legendary experience! 💅👑",
+    "Warning: Turning 25 means 10 PM is now officially bedtime! 😴💤",
+    "May your 25th year bring you unlimited iced coffee & zero back pain! ☕🌸",
+    "You are genuinely one in 8 billion! The world is so lucky to have you! 💖✨",
+    "Fortune says: Today calories are cancelled, eat all the cake you want! 🍰🤤",
+    "A certified queen since day one! Keep ruling with that gorgeous smile! 👑🥰",
+    "May all your wishes, goals, and secret shopping sprees come true! 🛍️✨",
+    "Breaking news: You're still the cutest person on this planet today! 🌸😍"
+  ];
+
+  let isCracked = false;
+  let clickCount = 0;
+
+  const crackCookie = (e) => {
+    e.stopPropagation();
+    clickCount++;
+
+    if (clickCount >= 11) {
+      cookie.classList.add('cracked');
+      text.innerText = "Okay enough with the cookies! 🛑 This much sugar is harmful to your health! 🍪❌";
+      paper.classList.add('show');
+      btn.innerText = "No more cookies for you! 🙅‍♀️";
+      btn.classList.add('disabled');
+      launchConfetti();
+      return;
+    }
+
+    if (!isCracked) {
+      isCracked = true;
+      cookie.classList.add('cracked');
+      const randomMsg = compliments[Math.floor(Math.random() * compliments.length)];
+      text.innerText = randomMsg;
+      paper.classList.add('show');
+      btn.innerText = "✨ Crack Another! 🥠";
+      launchConfetti();
+    } else {
+      paper.classList.remove('show');
+      cookie.classList.remove('cracked');
+      isCracked = false;
+      btn.innerText = "✨ Tap Cookie to Crack Open 🥠";
+    }
+  };
+
+  cookie.addEventListener('click', crackCookie);
+  btn.addEventListener('click', crackCookie);
+}
+setupFortuneCookie();
 
 function setupScratchCard() {
   const canvas = document.getElementById('scratchCanvas');
@@ -256,7 +368,13 @@ class Paper {
     const isHeart = paper.classList.contains('heart');
 
     const handleStart = (clientX, clientY, target) => {
-      if (target.closest('#scratchCanvas') || target.closest('.flip-indicator') || target.closest('#cakeContainer')) {
+      if (
+        target.closest('#scratchCanvas') || 
+        target.closest('.flip-indicator') || 
+        target.closest('#cakeContainer') ||
+        target.closest('#cookieWrapper') ||
+        target.closest('#cookieActionBtn')
+      ) {
         return;
       }
       if (this.holdingPaper) return;
