@@ -212,6 +212,91 @@ function launchConfetti() {
   }
 }
 
+function setupCakeDecor() {
+  const cake = document.getElementById('bigCake');
+  const slice = document.getElementById('cakeSlice');
+  const toppingsContainer = document.getElementById('toppingsContainer');
+  const cutBtn = document.getElementById('cutCakeBtn');
+  const toppingButtons = document.querySelectorAll('.topping-btn');
+
+  if (!cake || !slice || !cutBtn) return;
+
+  toppingButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const symbol = btn.getAttribute('data-topping');
+      const el = document.createElement('span');
+      el.className = 'placed-topping';
+      el.innerText = symbol;
+      el.style.left = `${15 + Math.random() * 65}%`;
+      el.style.top = `${Math.random() * 45}px`;
+      toppingsContainer.appendChild(el);
+    });
+  });
+
+  let isCut = false;
+  cutBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!isCut) {
+      isCut = true;
+      cake.style.transform = 'scale(0.8) translateX(-35px)';
+      slice.classList.add('show');
+      cutBtn.innerText = "✨ Decorate Another Cake 🎂";
+      launchConfetti();
+    } else {
+      isCut = false;
+      cake.style.transform = 'scale(1) translateX(0)';
+      slice.classList.remove('show');
+      toppingsContainer.innerHTML = '';
+      cutBtn.innerText = "🔪 Cut a Slice & Eat! 🍰";
+    }
+  });
+}
+setupCakeDecor();
+
+function setupUVFlashlight() {
+  const board = document.getElementById('uvBoard');
+  const beam = document.getElementById('uvBeamLight');
+  const hiddenLayer = document.getElementById('uvHiddenLayer');
+
+  if (!board || !beam || !hiddenLayer) return;
+
+  const handleUVMove = (clientX, clientY) => {
+    const rect = board.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+      beam.style.opacity = '1';
+      hiddenLayer.style.opacity = '1';
+      beam.style.left = `${x}px`;
+      beam.style.top = `${y}px`;
+      hiddenLayer.style.clipPath = `circle(55px at ${x}px ${y}px)`;
+    } else {
+      beam.style.opacity = '0';
+      hiddenLayer.style.opacity = '0';
+    }
+  };
+
+  board.addEventListener('mousemove', (e) => handleUVMove(e.clientX, e.clientY));
+  board.addEventListener('mouseleave', () => {
+    beam.style.opacity = '0';
+    hiddenLayer.style.opacity = '0';
+  });
+
+  board.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      handleUVMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  board.addEventListener('touchend', () => {
+    beam.style.opacity = '0';
+    hiddenLayer.style.opacity = '0';
+  });
+}
+setupUVFlashlight();
+
 function setupEnvelope() {
   const seal = document.getElementById('waxSeal');
   const flap = document.getElementById('envelopeFlap');
@@ -505,7 +590,10 @@ class Paper {
         target.closest('#cookieActionBtn') ||
         target.closest('#micBlowBtn') ||
         target.closest('#waxSeal') ||
-        target.closest('#letterPaper')
+        target.closest('#letterPaper') ||
+        target.closest('#uvBoard') ||
+        target.closest('#toppingsBar') ||
+        target.closest('#cutCakeBtn')
       ) {
         return;
       }

@@ -440,6 +440,262 @@ body {
   margin-bottom: 12px;
 }
 
+.cake-decor-card {
+  gap: 8px;
+}
+
+.decor-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: #e11d48;
+  font-weight: bold;
+}
+
+.decor-stage {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.big-cake {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.4s ease;
+}
+
+.cake-layer {
+  border-radius: 6px;
+}
+
+.layer-top {
+  width: 70px;
+  height: 25px;
+  background: #fbcfe8;
+  border: 1px solid #f472b6;
+  position: relative;
+}
+
+.cake-frosting-drip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: #ffffff;
+  border-radius: 6px 6px 4px 4px;
+}
+
+.layer-mid {
+  width: 100px;
+  height: 30px;
+  background: #fde047;
+  border: 1px solid #eab308;
+  margin-top: -2px;
+}
+
+.layer-bottom {
+  width: 130px;
+  height: 35px;
+  background: #fda4af;
+  border: 1px solid #fb7185;
+  margin-top: -2px;
+}
+
+.cake-plate {
+  width: 160px;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  margin-top: -2px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toppings-container {
+  position: absolute;
+  top: -15px;
+  left: 0;
+  right: 0;
+  height: 90px;
+  pointer-events: none;
+}
+
+.placed-topping {
+  position: absolute;
+  font-size: 18px;
+  animation: dropTopping 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dropTopping {
+  0% { transform: translateY(-20px) scale(0.4); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.cake-slice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cake-slice.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.slice-body {
+  font-size: 48px;
+  animation: gentleBounce 2s infinite ease-in-out;
+}
+
+.slice-note {
+  font-family: 'Caveat', cursive;
+  font-size: 18px;
+  color: #e11d48;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.toppings-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.topping-btn {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.topping-btn:active {
+  transform: scale(0.85);
+  background: #ffe4e6;
+}
+
+.cut-cake-btn {
+  background: #ffe4e6;
+  border: 1.5px solid #fb7185;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  font-weight: bold;
+  color: #e11d48;
+  cursor: pointer;
+  margin-top: 2px;
+  box-shadow: 0 2px 6px rgba(251, 113, 133, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.cut-cake-btn:active {
+  transform: scale(0.93);
+}
+
+.uv-card {
+  gap: 8px;
+}
+
+.uv-title {
+  font-family: 'Caveat', cursive;
+  font-size: 23px;
+  color: #6366f1;
+  font-weight: bold;
+}
+
+.uv-board {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  height: 160px;
+  background: #090d16;
+  border-radius: 8px;
+  border: 1.5px solid #312e81;
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8), 0 4px 14px rgba(49, 46, 129, 0.2);
+}
+
+.uv-ambient-stars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.uv-hidden-layer {
+  position: absolute;
+  inset: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.uv-glow-text {
+  font-family: 'Caveat', cursive;
+  font-size: 19px;
+  line-height: 1.25;
+  color: #a5f3fc;
+  text-shadow: 0 0 8px #22d3ee, 0 0 16px #06b6d4, 0 0 24px #38bdf8;
+  font-weight: bold;
+}
+
+.uv-glow-doodles {
+  font-size: 15px;
+  margin-top: 6px;
+  filter: drop-shadow(0 0 6px #f43f5e);
+}
+
+.uv-beam-light {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(99, 102, 241, 0.2) 50%, transparent 75%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  mix-blend-mode: screen;
+}
+
+.uv-hint {
+  font-size: 16px;
+  color: #6366f1;
+}
+
 .envelope-card {
   gap: 8px;
 }
