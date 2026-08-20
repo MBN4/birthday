@@ -212,6 +212,105 @@ function launchConfetti() {
   }
 }
 
+function setupSlotMachine() {
+  const btn = document.getElementById('slotSpinBtn');
+  const r1 = document.getElementById('reel1');
+  const r2 = document.getElementById('reel2');
+  const r3 = document.getElementById('reel3');
+  const msg = document.getElementById('slotMessage');
+
+  if (!btn || !r1 || !r2 || !r3 || !msg) return;
+
+  const symbols = ['🐧', '👑', '💖', '🌸', '🎂', '💎', '⭐'];
+  let isSpinning = false;
+  let spinsCount = 0;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isSpinning) return;
+    isSpinning = true;
+    spinsCount++;
+
+    r1.classList.add('spinning');
+    r2.classList.add('spinning');
+    r3.classList.add('spinning');
+    btn.disabled = true;
+    msg.innerText = "Reels are spinning... 🍀✨";
+
+    const spinInterval = setInterval(() => {
+      r1.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+      r2.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+      r3.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    }, 80);
+
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      r1.classList.remove('spinning');
+      r2.classList.remove('spinning');
+      r3.classList.remove('spinning');
+
+      r1.innerText = '🐧';
+      r2.innerText = '🐧';
+      r3.innerText = '🐧';
+
+      msg.innerText = "🎉 TRIPLE PENGUIN JACKPOT! 🐧🏆 Unlimited hugs & happiness unlocked! 💖";
+      launchConfetti();
+      isSpinning = false;
+      btn.disabled = false;
+      btn.innerText = "🎰 SPIN AGAIN! 🍀";
+    }, 1600);
+  });
+}
+setupSlotMachine();
+
+function setupCrystalBall() {
+  const ball = document.getElementById('crystalBall');
+  const btn = document.getElementById('crystalBtn');
+  const text = document.getElementById('prophecyText');
+
+  if (!ball || !btn || !text) return;
+
+  const prophecies = [
+    "The crystal sees: Random joint pain starting tomorrow morning! Welcome to 25! 👵🦴",
+    "The stars predict: Spontaneous shopping sprees and zero financial regrets this year! 🛍️✨",
+    "A vision appears: You complaining that the music at parties is 'way too loud' now. 🎧😴",
+    "Prophecy: 25 will be your biggest glow-up year with unlimited happiness & success! 🌟💖",
+    "The orb reveals: A sudden, uncontrollable obsession with fancy house plants & organizing! 🪴🧺",
+    "Destiny speaks: You will soon be treated to the most delicious birthday dinner date ever! 🍝🍨",
+    "The mist shows: Going to bed at 9:45 PM and considering it the best decision of your life! 🛌💤",
+    "Future update: 100% chance of staying the most charming and adorable human alive! 🌸👑",
+    "The crystal whispers: You owe MBN ice cream and a PS5 for this amazing birthday surprise! 🍦🎮",
+    "Prophecy: 25 brings zero drama, flawless skin, and endless iced lattes! ☕💅",
+    "The vision is clear: You will laugh so hard your stomach hurts throughout your 25th year! 😂✨",
+    "A message from the spirits: Halfway to 50! Time to start stretching every morning! 🧘‍♀️👵"
+  ];
+
+  let lastIndex = -1;
+
+  const revealProphecy = (e) => {
+    e.stopPropagation();
+    ball.classList.add('active');
+    text.style.opacity = '0.4';
+
+    setTimeout(() => {
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * prophecies.length);
+      } while (randomIndex === lastIndex);
+      lastIndex = randomIndex;
+
+      text.innerText = prophecies[randomIndex];
+      text.style.opacity = '1';
+      ball.classList.remove('active');
+      launchConfetti();
+    }, 450);
+  };
+
+  ball.addEventListener('click', revealProphecy);
+  btn.addEventListener('click', revealProphecy);
+}
+setupCrystalBall();
+
 function setupPhotoBooth() {
   const input = document.getElementById('photoInput');
   const img = document.getElementById('boothImage');
@@ -802,7 +901,10 @@ class Paper {
         target.closest('#stickersTray') ||
         target.closest('.upload-btn') ||
         target.closest('#boothSaveBtn') ||
-        target.closest('.booth-placed-sticker')
+        target.closest('.booth-placed-sticker') ||
+        target.closest('#slotSpinBtn') ||
+        target.closest('#crystalBall') ||
+        target.closest('#crystalBtn')
       ) {
         return;
       }
