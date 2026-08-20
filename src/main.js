@@ -212,6 +212,41 @@ function launchConfetti() {
   }
 }
 
+function setupEnvelope() {
+  const seal = document.getElementById('waxSeal');
+  const flap = document.getElementById('envelopeFlap');
+  const letter = document.getElementById('letterPaper');
+  const hint = document.getElementById('envelopeHint');
+
+  if (!seal || !flap || !letter) return;
+
+  let isOpen = false;
+
+  seal.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!isOpen) {
+      isOpen = true;
+      seal.classList.add('broken');
+      setTimeout(() => {
+        flap.classList.add('open');
+        setTimeout(() => {
+          letter.classList.add('open');
+          if (hint) hint.innerText = "✨ Read your special letter ✨";
+          launchConfetti();
+        }, 300);
+      }, 200);
+    }
+  });
+
+  letter.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isOpen) {
+      letter.classList.toggle('open');
+    }
+  });
+}
+setupEnvelope();
+
 function setupFortuneCookie() {
   const cookie = document.getElementById('fortuneCookie');
   const paper = document.getElementById('fortunePaper');
@@ -364,7 +399,8 @@ function setupCandle() {
   });
 
   const initMicBlow = async (e) => {
-    e?.stopPropagation();
+    e.stopPropagation();
+    e.preventDefault();
     if (isBlownOut) return;
 
     try {
@@ -373,34 +409,45 @@ function setupCandle() {
       const source = audioContext.createMediaStreamSource(audioStream);
       analyser = audioContext.createAnalyser();
       analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.3;
+      analyser.smoothingTimeConstant = 0.4;
       source.connect(analyser);
 
-      micBtn.innerText = "💨 Blow into your mic now!";
+      micBtn.innerText = "💨 Blow hard into your mic!";
       micBtn.classList.add('listening');
-      msg.innerText = "Blow hard into your microphone! 🌬️";
+      msg.innerText = "Blow continuously into mic! 🌬️";
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      let readyToDetect = false;
+
+      setTimeout(() => {
+        readyToDetect = true;
+      }, 500);
+
+      let sustainedBlowFrames = 0;
 
       const checkBlow = () => {
         if (isBlownOut) return;
         analyser.getByteFrequencyData(dataArray);
 
-        let sum = 0;
-        for (let i = 0; i < 40; i++) {
-          sum += dataArray[i];
-        }
-        const lowFreqAverage = sum / 40;
+        if (readyToDetect) {
+          let sum = 0;
+          for (let i = 2; i < 35; i++) {
+            sum += dataArray[i];
+          }
+          const windEnergy = sum / 33;
 
-        if (lowFreqAverage > 45) {
-          flame.classList.add('waver');
-        } else {
-          flame.classList.remove('waver');
-        }
+          if (windEnergy > 55) {
+            flame.classList.add('waver');
+            sustainedBlowFrames++;
+          } else {
+            flame.classList.remove('waver');
+            sustainedBlowFrames = Math.max(0, sustainedBlowFrames - 1);
+          }
 
-        if (lowFreqAverage > 75) {
-          extinguishCandle();
-          return;
+          if (sustainedBlowFrames > 6 || windEnergy > 95) {
+            extinguishCandle();
+            return;
+          }
         }
 
         micAnimationId = requestAnimationFrame(checkBlow);
@@ -408,7 +455,7 @@ function setupCandle() {
 
       checkBlow();
     } catch {
-      micBtn.innerText = "Mic unavailable (Tap flame instead)";
+      micBtn.innerText = "Mic unavailable (Tap candle instead)";
       setTimeout(() => {
         micBtn.innerText = "🎙️ Enable Mic to Blow";
       }, 3000);
@@ -416,6 +463,7 @@ function setupCandle() {
   };
 
   micBtn?.addEventListener('click', initMicBlow);
+  micBtn?.addEventListener('touchstart', initMicBlow, { passive: false });
 }
 setupCandle();
 
@@ -455,7 +503,9 @@ class Paper {
         target.closest('#cakeContainer') ||
         target.closest('#cookieWrapper') ||
         target.closest('#cookieActionBtn') ||
-        target.closest('#micBlowBtn')
+        target.closest('#micBlowBtn') ||
+        target.closest('#waxSeal') ||
+        target.closest('#letterPaper')
       ) {
         return;
       }
