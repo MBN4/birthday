@@ -322,19 +322,100 @@ function setupCandle() {
   const smoke = document.getElementById('candleSmoke');
   const msg = document.getElementById('wishMessage');
   const title = document.getElementById('candleTitle');
+  const micBtn = document.getElementById('micBlowBtn');
 
   if (!container || !flame) return;
 
+  let isBlownOut = false;
+  let audioStream = null;
+  let audioContext = null;
+  let analyser = null;
+  let micAnimationId = null;
+
+  const extinguishCandle = () => {
+    if (isBlownOut) return;
+    isBlownOut = true;
+    flame.classList.remove('waver');
+    flame.classList.add('blown-out');
+    smoke.style.display = 'block';
+    title.innerText = "Wish Granted! ✨🎂";
+    msg.innerText = "May all your dreams come true! 💖";
+    if (micBtn) {
+      micBtn.innerText = "✨ Flame Extinguished ✨";
+      micBtn.classList.remove('listening');
+      micBtn.disabled = true;
+    }
+    launchConfetti();
+
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+    }
+    if (audioContext && audioContext.state !== 'closed') {
+      audioContext.close();
+    }
+    if (micAnimationId) {
+      cancelAnimationFrame(micAnimationId);
+    }
+  };
+
   container.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!flame.classList.contains('blown-out')) {
-      flame.classList.add('blown-out');
-      smoke.style.display = 'block';
-      title.innerText = "Wish Granted! ✨🎂";
-      msg.innerText = "May all your dreams come true! 💖";
-      launchConfetti();
-    }
+    extinguishCandle();
   });
+
+  const initMicBlow = async (e) => {
+    e?.stopPropagation();
+    if (isBlownOut) return;
+
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioContext.createMediaStreamSource(audioStream);
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.3;
+      source.connect(analyser);
+
+      micBtn.innerText = "💨 Blow into your mic now!";
+      micBtn.classList.add('listening');
+      msg.innerText = "Blow hard into your microphone! 🌬️";
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      const checkBlow = () => {
+        if (isBlownOut) return;
+        analyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < 40; i++) {
+          sum += dataArray[i];
+        }
+        const lowFreqAverage = sum / 40;
+
+        if (lowFreqAverage > 45) {
+          flame.classList.add('waver');
+        } else {
+          flame.classList.remove('waver');
+        }
+
+        if (lowFreqAverage > 75) {
+          extinguishCandle();
+          return;
+        }
+
+        micAnimationId = requestAnimationFrame(checkBlow);
+      };
+
+      checkBlow();
+    } catch {
+      micBtn.innerText = "Mic unavailable (Tap flame instead)";
+      setTimeout(() => {
+        micBtn.innerText = "🎙️ Enable Mic to Blow";
+      }, 3000);
+    }
+  };
+
+  micBtn?.addEventListener('click', initMicBlow);
 }
 setupCandle();
 
@@ -373,7 +454,8 @@ class Paper {
         target.closest('.flip-indicator') || 
         target.closest('#cakeContainer') ||
         target.closest('#cookieWrapper') ||
-        target.closest('#cookieActionBtn')
+        target.closest('#cookieActionBtn') ||
+        target.closest('#micBlowBtn')
       ) {
         return;
       }
