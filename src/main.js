@@ -212,6 +212,84 @@ function launchConfetti() {
   }
 }
 
+function setupPhotoBooth() {
+  const input = document.getElementById('photoInput');
+  const img = document.getElementById('boothImage');
+  const stickersLayer = document.getElementById('boothStickersLayer');
+  const stickers = document.querySelectorAll('.sticker-opt');
+  const saveBtn = document.getElementById('boothSaveBtn');
+
+  if (!input || !img || !stickersLayer) return;
+
+  input.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.src = event.target.result;
+        launchConfetti();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  stickers.forEach((s) => {
+    s.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const symbol = s.getAttribute('data-sticker');
+      const el = document.createElement('span');
+      el.className = 'booth-placed-sticker';
+      el.innerText = symbol;
+      el.style.left = `${20 + Math.random() * 60}%`;
+      el.style.top = `${20 + Math.random() * 60}%`;
+
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let initL = 0, initT = 0;
+
+      const onStart = (cx, cy) => {
+        isDragging = true;
+        startX = cx;
+        startY = cy;
+        initL = el.offsetLeft;
+        initT = el.offsetTop;
+      };
+
+      const onMove = (cx, cy) => {
+        if (!isDragging) return;
+        const dx = cx - startX;
+        const dy = cy - startY;
+        el.style.left = `${initL + dx}px`;
+        el.style.top = `${initT + dy}px`;
+      };
+
+      const onEnd = () => {
+        isDragging = false;
+      };
+
+      el.addEventListener('mousedown', (ev) => { ev.stopPropagation(); onStart(ev.clientX, ev.clientY); });
+      window.addEventListener('mousemove', (ev) => onMove(ev.clientX, ev.clientY));
+      window.addEventListener('mouseup', onEnd);
+
+      el.addEventListener('touchstart', (ev) => { ev.stopPropagation(); onStart(ev.touches[0].clientX, ev.touches[0].clientY); }, { passive: true });
+      window.addEventListener('touchmove', (ev) => { if (ev.touches.length) onMove(ev.touches[0].clientX, ev.touches[0].clientY); }, { passive: true });
+      window.addEventListener('touchend', onEnd);
+
+      stickersLayer.appendChild(el);
+    });
+  });
+
+  saveBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    saveBtn.innerText = "✨ Polaroid Saved! 💖";
+    launchConfetti();
+    setTimeout(() => {
+      saveBtn.innerText = "✨ Save Decorated Polaroid 💾";
+    }, 2500);
+  });
+}
+setupPhotoBooth();
+
 function setupBottle() {
   const cork = document.getElementById('bottleCork');
   const bottle = document.getElementById('glassBottle');
@@ -419,17 +497,20 @@ function setupEnvelope() {
   if (!seal || !flap || !letter) return;
 
   let isOpen = false;
+  let isFullyOpen = false;
 
   seal.addEventListener('click', (e) => {
     e.stopPropagation();
     if (!isOpen) {
       isOpen = true;
+      isFullyOpen = true;
       seal.classList.add('broken');
       setTimeout(() => {
         flap.classList.add('open');
         setTimeout(() => {
+          letter.classList.remove('peeking');
           letter.classList.add('open');
-          if (hint) hint.innerText = "✨ Read your special letter ✨";
+          if (hint) hint.innerText = "✨ Tap letter to tuck / pull ✨";
           launchConfetti();
         }, 300);
       }, 200);
@@ -439,7 +520,15 @@ function setupEnvelope() {
   letter.addEventListener('click', (e) => {
     e.stopPropagation();
     if (isOpen) {
-      letter.classList.toggle('open');
+      if (isFullyOpen) {
+        letter.classList.remove('open');
+        letter.classList.add('peeking');
+        isFullyOpen = false;
+      } else {
+        letter.classList.remove('peeking');
+        letter.classList.add('open');
+        isFullyOpen = true;
+      }
     }
   });
 }
@@ -709,7 +798,11 @@ class Paper {
         target.closest('#cutCakeBtn') ||
         target.closest('#chargeBtn') ||
         target.closest('#glassBottle') ||
-        target.closest('#scrollUnrolled')
+        target.closest('#scrollUnrolled') ||
+        target.closest('#stickersTray') ||
+        target.closest('.upload-btn') ||
+        target.closest('#boothSaveBtn') ||
+        target.closest('.booth-placed-sticker')
       ) {
         return;
       }
