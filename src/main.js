@@ -1,10 +1,32 @@
 import './style.css';
 
-const SECRET_URL = "https://example.com"; 
+const SECRET_URL = "https://hbd-eight-kappa.vercel.app/";
 
 const papers = Array.from(document.querySelectorAll('.paper'));
 let highestZ = papers.length + 10;
 let movedCardsCount = 0;
+const movedHistory = [];
+
+const bringBackBtn = document.getElementById('bringBackBtn');
+
+const updateBringBackButton = () => {
+  if (!bringBackBtn) return;
+  if (movedHistory.length > 0) {
+    bringBackBtn.classList.add('show');
+  } else {
+    bringBackBtn.classList.remove('show');
+  }
+};
+
+bringBackBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (movedHistory.length === 0) return;
+
+  const lastMoved = movedHistory.pop();
+  lastMoved.snapBack();
+  if (movedCardsCount > 0) movedCardsCount--;
+  updateBringBackButton();
+});
 
 const bgMusic = document.getElementById('bgMusic');
 const musicToggle = document.getElementById('musicToggle');
@@ -87,12 +109,12 @@ function launchConfetti() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const confettiPieces = Array.from({ length: 100 }).map(() => ({
+  const confettiPieces = Array.from({ length: 90 }).map(() => ({
     x: canvas.width / 2,
     y: canvas.height / 2,
-    vx: (Math.random() - 0.5) * 18,
-    vy: (Math.random() - 0.7) * 20,
-    size: Math.random() * 8 + 4,
+    vx: (Math.random() - 0.5) * 16,
+    vy: (Math.random() - 0.7) * 18,
+    size: Math.random() * 7 + 4,
     color: ['#ff4d6d', '#ff758f', '#ffb3c1', '#ffd166', '#06d6a0', '#118ab2'][Math.floor(Math.random() * 6)],
     rotation: Math.random() * 360,
     rSpeed: (Math.random() - 0.5) * 10,
@@ -116,7 +138,7 @@ function launchConfetti() {
     });
 
     frame++;
-    if (frame < 140) {
+    if (frame < 130) {
       requestAnimationFrame(animate);
     } else {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -126,13 +148,13 @@ function launchConfetti() {
 
   const bContainer = document.getElementById('balloonsContainer');
   const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe'];
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 15; i++) {
     const balloon = document.createElement('div');
     balloon.className = 'balloon';
-    balloon.style.left = `${Math.random() * 95}vw`;
+    balloon.style.left = `${Math.random() * 92}vw`;
     balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    balloon.style.animationDelay = `${Math.random() * 1.5}s`;
-    balloon.style.animationDuration = `${5 + Math.random() * 3}s`;
+    balloon.style.animationDelay = `${Math.random() * 1.2}s`;
+    balloon.style.animationDuration = `${5 + Math.random() * 2.5}s`;
     bContainer.appendChild(balloon);
   }
 }
@@ -142,6 +164,9 @@ function setupScratchCard() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   
+  canvas.width = 240;
+  canvas.height = 110;
+
   const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   grad.addColorStop(0, '#e5c07b');
   grad.addColorStop(0.5, '#ffd700');
@@ -150,7 +175,7 @@ function setupScratchCard() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = '#6d4c41';
-  ctx.font = 'bold 15px sans-serif';
+  ctx.font = 'bold 14px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('✨ Scratch to Reveal! ✨', canvas.width / 2, canvas.height / 2 + 5);
 
@@ -158,12 +183,14 @@ function setupScratchCard() {
 
   const scratch = (clientX, clientY) => {
     const rect = canvas.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.arc(x, y, 15, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -216,11 +243,13 @@ class Paper {
   prevMouseY = 0;
   velX = 0;
   velY = 0;
-  rotation = (Math.random() * 8 - 4);
+  rotation = (Math.random() * 6 - 3);
   currentPaperX = 0;
   currentPaperY = 0;
+  domElement = null;
 
   init(paper, index) {
+    this.domElement = paper;
     paper.style.zIndex = index + 1;
     paper.style.transform = `translate(0px, 0px) rotateZ(${this.rotation}deg)`;
 
@@ -232,16 +261,16 @@ class Paper {
       }
       if (this.holdingPaper) return;
       this.holdingPaper = true;
-      this.hasMovedSignificantly = false;
 
       this.startX = clientX;
       this.startY = clientY;
       this.prevMouseX = clientX;
       this.prevMouseY = clientY;
 
+      paper.classList.remove('snapping-back');
       paper.classList.add('is-dragging');
       paper.style.zIndex = highestZ++;
-      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.04) rotateZ(${this.rotation}deg)`;
+      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.03) rotateZ(${this.rotation}deg)`;
     };
 
     const handleMove = (clientX, clientY) => {
@@ -258,7 +287,7 @@ class Paper {
 
       spawnTrailParticle(clientX, clientY);
 
-      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.04) rotateZ(${this.rotation}deg)`;
+      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.03) rotateZ(${this.rotation}deg)`;
     };
 
     const handleEnd = (endX, endY) => {
@@ -269,19 +298,22 @@ class Paper {
 
       const distanceMoved = Math.hypot(endX - this.startX, endY - this.startY);
 
-      if (distanceMoved > 60 && !this.hasMovedSignificantly) {
+      if (distanceMoved > 50 && !this.hasMovedSignificantly) {
         this.hasMovedSignificantly = true;
         movedCardsCount++;
+        movedHistory.push(this);
+        updateBringBackButton();
+
         if (movedCardsCount === papers.length - 1) {
           launchConfetti();
         }
       }
 
-      if (isHeart && distanceMoved < 10) {
+      if (isHeart && distanceMoved < 15) {
         launchConfetti();
         setTimeout(() => {
           window.location.href = SECRET_URL;
-        }, 300);
+        }, 500);
       }
     };
 
@@ -312,6 +344,18 @@ class Paper {
       this.holdingPaper = false;
       paper.classList.remove('is-dragging');
     });
+  }
+
+  snapBack() {
+    this.currentPaperX = 0;
+    this.currentPaperY = 0;
+    this.hasMovedSignificantly = false;
+    this.domElement.classList.add('snapping-back');
+    this.domElement.style.zIndex = highestZ++;
+    this.domElement.style.transform = `translate(0px, 0px) scale(1) rotateZ(${this.rotation}deg)`;
+    setTimeout(() => {
+      this.domElement.classList.remove('snapping-back');
+    }, 450);
   }
 }
 
