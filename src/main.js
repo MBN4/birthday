@@ -1,1014 +1,1105 @@
-import './style.css';
-
-const SECRET_URL = "https://hbd-eight-kappa.vercel.app/";
-
-const papers = Array.from(document.querySelectorAll('.paper'));
-let highestZ = papers.length + 10;
-let movedCardsCount = 0;
-const movedHistory = [];
-
-const bringBackBtn = document.getElementById('bringBackBtn');
-
-const updateBringBackButton = () => {
-  if (!bringBackBtn) return;
-  if (movedHistory.length > 0) {
-    bringBackBtn.classList.add('show');
-  } else {
-    bringBackBtn.classList.remove('show');
-  }
-};
-
-bringBackBtn?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (movedHistory.length === 0) return;
-
-  const lastMoved = movedHistory.pop();
-  lastMoved.snapBack();
-  if (movedCardsCount > 0) movedCardsCount--;
-  updateBringBackButton();
-});
-
-const bgMusic = document.getElementById('bgMusic');
-const musicToggle = document.getElementById('musicToggle');
-let isMusicStarted = false;
-
-function playAudio() {
-  if (!bgMusic) return;
-  bgMusic.play().then(() => {
-    isMusicStarted = true;
-    musicToggle?.classList.add('playing');
-  }).catch(() => {});
-}
-
-function toggleAudio(e) {
-  e?.stopPropagation();
-  if (!bgMusic) return;
-
-  if (bgMusic.paused) {
-    bgMusic.play();
-    musicToggle?.classList.add('playing');
-  } else {
-    bgMusic.pause();
-    musicToggle?.classList.remove('playing');
-  }
-}
-
-musicToggle?.addEventListener('click', toggleAudio);
-
-const startAudioOnFirstInteraction = () => {
-  if (!isMusicStarted) {
-    playAudio();
-  }
-  window.removeEventListener('click', startAudioOnFirstInteraction);
-  window.removeEventListener('touchstart', startAudioOnFirstInteraction);
-};
-window.addEventListener('click', startAudioOnFirstInteraction);
-window.addEventListener('touchstart', startAudioOnFirstInteraction, { passive: true });
-
-window.addEventListener('load', () => {
-  const splash = document.getElementById('splashScreen');
-  if (splash) {
-    setTimeout(() => {
-      splash.classList.add('fade-out');
-      setTimeout(() => splash.remove(), 900);
-    }, 2400);
-  }
-});
-
-function createAmbientParticles() {
-  const container = document.getElementById('ambientParticles');
-  const symbols = ['🌸', '✨', '💖', '⭐', '🎈'];
-  
-  for (let i = 0; i < 15; i++) {
-    const el = document.createElement('div');
-    el.className = 'particle';
-    el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-    el.style.left = `${Math.random() * 100}vw`;
-    el.style.animationDelay = `${Math.random() * 8}s`;
-    el.style.animationDuration = `${8 + Math.random() * 6}s`;
-    container.appendChild(el);
-  }
-}
-createAmbientParticles();
-
-function spawnTrailParticle(x, y) {
-  if (Math.random() > 0.4) return;
-  const emojis = ['✨', '💖', '⭐', '🌸'];
-  const p = document.createElement('div');
-  p.className = 'trail-particle';
-  p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-  p.style.left = `${x}px`;
-  p.style.top = `${y}px`;
-  document.body.appendChild(p);
-  setTimeout(() => p.remove(), 800);
-}
-
-function spawnBalloon(customLeft = null, customDelay = 0) {
-  const bContainer = document.getElementById('balloonsContainer');
-  if (!bContainer) return;
-
-  const colors = ['#ff85a1', '#fbb1bd', '#ffd166', '#a2d2ff', '#bde0fe', '#ff99c8'];
-  const balloon = document.createElement('div');
-  balloon.className = 'balloon';
-  balloon.style.left = customLeft !== null ? `${customLeft}vw` : `${Math.random() * 90}vw`;
-  balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-  balloon.style.animationDelay = `${customDelay}s`;
-  balloon.style.animationDuration = `${5.5 + Math.random() * 2.5}s`;
-
-  const popBalloon = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (balloon.classList.contains('popping')) return;
-    
-    balloon.classList.add('popping');
-    const rect = balloon.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-
-    const emojis = ['✨', '💖', '⭐', '🎉', '🌸'];
-    for (let i = 0; i < 6; i++) {
-      const p = document.createElement('div');
-      p.className = 'pop-particle';
-      p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      p.style.left = `${cx}px`;
-      p.style.top = `${cy}px`;
-      const angle = (Math.PI * 2 / 6) * i;
-      const dist = 30 + Math.random() * 25;
-      p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
-      p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 600);
-    }
-
-    setTimeout(() => {
-      balloon.remove();
-    }, 150);
-  };
-
-  balloon.addEventListener('mousedown', popBalloon);
-  balloon.addEventListener('touchstart', popBalloon, { passive: false });
-
-  balloon.addEventListener('animationend', () => {
-    balloon.remove();
-  });
-
-  bContainer.appendChild(balloon);
-}
-
-function startAmbientBalloons() {
-  setInterval(() => {
-    if (document.querySelectorAll('.balloon').length < 6) {
-      spawnBalloon();
-    }
-  }, 3500);
-}
-startAmbientBalloons();
-
-function launchConfetti() {
-  const canvas = document.getElementById('confettiCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const confettiPieces = Array.from({ length: 90 }).map(() => ({
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    vx: (Math.random() - 0.5) * 16,
-    vy: (Math.random() - 0.7) * 18,
-    size: Math.random() * 7 + 4,
-    color: ['#ff4d6d', '#ff758f', '#ffb3c1', '#ffd166', '#06d6a0', '#118ab2'][Math.floor(Math.random() * 6)],
-    rotation: Math.random() * 360,
-    rSpeed: (Math.random() - 0.5) * 10,
-  }));
-
-  let frame = 0;
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    confettiPieces.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.4;
-      p.rotation += p.rSpeed;
-
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-      ctx.restore();
-    });
-
-    frame++;
-    if (frame < 130) {
-      requestAnimationFrame(animate);
-    } else {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  }
-  animate();
-
-  for (let i = 0; i < 15; i++) {
-    spawnBalloon(Math.random() * 92, Math.random() * 1.2);
-  }
-}
-
-function setupSlotMachine() {
-  const btn = document.getElementById('slotSpinBtn');
-  const r1 = document.getElementById('reel1');
-  const r2 = document.getElementById('reel2');
-  const r3 = document.getElementById('reel3');
-  const msg = document.getElementById('slotMessage');
-
-  if (!btn || !r1 || !r2 || !r3 || !msg) return;
-
-  const symbols = ['🐧', '👑', '💖', '🌸', '🎂', '💎', '⭐'];
-  let isSpinning = false;
-  let spinsCount = 0;
-
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (isSpinning) return;
-    isSpinning = true;
-    spinsCount++;
-
-    r1.classList.add('spinning');
-    r2.classList.add('spinning');
-    r3.classList.add('spinning');
-    btn.disabled = true;
-    msg.innerText = "Reels are spinning... 🍀✨";
-
-    const spinInterval = setInterval(() => {
-      r1.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-      r2.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-      r3.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-    }, 80);
-
-    setTimeout(() => {
-      clearInterval(spinInterval);
-      r1.classList.remove('spinning');
-      r2.classList.remove('spinning');
-      r3.classList.remove('spinning');
-
-      r1.innerText = '🐧';
-      r2.innerText = '🐧';
-      r3.innerText = '🐧';
-
-      msg.innerText = "🎉 TRIPLE PENGUIN JACKPOT! 🐧🏆 Unlimited hugs & happiness unlocked! 💖";
-      launchConfetti();
-      isSpinning = false;
-      btn.disabled = false;
-      btn.innerText = "🎰 SPIN AGAIN! 🍀";
-    }, 1600);
-  });
-}
-setupSlotMachine();
-
-function setupCrystalBall() {
-  const ball = document.getElementById('crystalBall');
-  const btn = document.getElementById('crystalBtn');
-  const text = document.getElementById('prophecyText');
-
-  if (!ball || !btn || !text) return;
-
-  const prophecies = [
-    "The crystal sees: Random joint pain starting tomorrow morning! Welcome to 25! 👵🦴",
-    "The stars predict: Spontaneous shopping sprees and zero financial regrets this year! 🛍️✨",
-    "A vision appears: You complaining that the music at parties is 'way too loud' now. 🎧😴",
-    "Prophecy: 25 will be your biggest glow-up year with unlimited happiness & success! 🌟💖",
-    "The orb reveals: A sudden, uncontrollable obsession with fancy house plants & organizing! 🪴🧺",
-    "Destiny speaks: You will soon be treated to the most delicious birthday dinner date ever! 🍝🍨",
-    "The mist shows: Going to bed at 9:45 PM and considering it the best decision of your life! 🛌💤",
-    "Future update: 100% chance of staying the most charming and adorable human alive! 🌸👑",
-    "The crystal whispers: You owe MBN ice cream and a PS5 for this amazing birthday surprise! 🍦🎮",
-    "Prophecy: 25 brings zero drama, flawless skin, and endless iced lattes! ☕💅",
-    "The vision is clear: You will laugh so hard your stomach hurts throughout your 25th year! 😂✨",
-    "A message from the spirits: Halfway to 50! Time to start stretching every morning! 🧘‍♀️👵"
-  ];
-
-  let lastIndex = -1;
-
-  const revealProphecy = (e) => {
-    e.stopPropagation();
-    ball.classList.add('active');
-    text.style.opacity = '0.4';
-
-    setTimeout(() => {
-      let randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * prophecies.length);
-      } while (randomIndex === lastIndex);
-      lastIndex = randomIndex;
-
-      text.innerText = prophecies[randomIndex];
-      text.style.opacity = '1';
-      ball.classList.remove('active');
-      launchConfetti();
-    }, 450);
-  };
-
-  ball.addEventListener('click', revealProphecy);
-  btn.addEventListener('click', revealProphecy);
-}
-setupCrystalBall();
-
-function setupPhotoBooth() {
-  const input = document.getElementById('photoInput');
-  const img = document.getElementById('boothImage');
-  const stickersLayer = document.getElementById('boothStickersLayer');
-  const stickers = document.querySelectorAll('.sticker-opt');
-  const saveBtn = document.getElementById('boothSaveBtn');
-
-  if (!input || !img || !stickersLayer) return;
-
-  input.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        img.src = event.target.result;
-        launchConfetti();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  stickers.forEach((s) => {
-    s.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const symbol = s.getAttribute('data-sticker');
-      const el = document.createElement('span');
-      el.className = 'booth-placed-sticker';
-      el.innerText = symbol;
-      el.style.left = `${20 + Math.random() * 60}%`;
-      el.style.top = `${20 + Math.random() * 60}%`;
-
-      let isDragging = false;
-      let startX = 0, startY = 0;
-      let initL = 0, initT = 0;
-
-      const onStart = (cx, cy) => {
-        isDragging = true;
-        startX = cx;
-        startY = cy;
-        initL = el.offsetLeft;
-        initT = el.offsetTop;
-      };
-
-      const onMove = (cx, cy) => {
-        if (!isDragging) return;
-        const dx = cx - startX;
-        const dy = cy - startY;
-        el.style.left = `${initL + dx}px`;
-        el.style.top = `${initT + dy}px`;
-      };
-
-      const onEnd = () => {
-        isDragging = false;
-      };
-
-      el.addEventListener('mousedown', (ev) => { ev.stopPropagation(); onStart(ev.clientX, ev.clientY); });
-      window.addEventListener('mousemove', (ev) => onMove(ev.clientX, ev.clientY));
-      window.addEventListener('mouseup', onEnd);
-
-      el.addEventListener('touchstart', (ev) => { ev.stopPropagation(); onStart(ev.touches[0].clientX, ev.touches[0].clientY); }, { passive: true });
-      window.addEventListener('touchmove', (ev) => { if (ev.touches.length) onMove(ev.touches[0].clientX, ev.touches[0].clientY); }, { passive: true });
-      window.addEventListener('touchend', onEnd);
-
-      stickersLayer.appendChild(el);
-    });
-  });
-
-  saveBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    saveBtn.innerText = "✨ Polaroid Saved! 💖";
-    launchConfetti();
-    setTimeout(() => {
-      saveBtn.innerText = "✨ Save Decorated Polaroid 💾";
-    }, 2500);
-  });
-}
-setupPhotoBooth();
-
-function setupBottle() {
-  const cork = document.getElementById('bottleCork');
-  const bottle = document.getElementById('glassBottle');
-  const scroll = document.getElementById('scrollUnrolled');
-  const hint = document.getElementById('bottleHint');
-
-  if (!cork || !bottle || !scroll) return;
-
-  let isUncorked = false;
-
-  const uncork = (e) => {
-    e.stopPropagation();
-    if (!isUncorked) {
-      isUncorked = true;
-      cork.classList.add('popped');
-      setTimeout(() => {
-        scroll.classList.add('show');
-        if (hint) hint.innerText = "✨ Read your ocean message ✨";
-        launchConfetti();
-      }, 350);
-    } else {
-      scroll.classList.toggle('show');
-    }
-  };
-
-  cork.addEventListener('click', uncork);
-  bottle.addEventListener('click', uncork);
-}
-setupBottle();
-
-function setupPowerMeter() {
-  const btn = document.getElementById('chargeBtn');
-  const needle = document.getElementById('gaugeNeedle');
-  const val = document.getElementById('gaugeValue');
-  const status = document.getElementById('gaugeStatus');
-
-  if (!btn || !needle || !val || !status) return;
-
-  let charge = 0;
-  let chargeInterval = null;
-  let isMaxed = false;
-
-  const statuses = [
-    { threshold: 0, text: "Status: Resting Power ✨" },
-    { threshold: 25, text: "Status: Dangerously Cute 🥰" },
-    { threshold: 55, text: "Status: Radiant Energy 🌟" },
-    { threshold: 85, text: "Status: Absolute Slay 💅" },
-    { threshold: 100, text: "Status: 👑 QUEEN LEVEL OVERLOAD 👑" }
-  ];
-
-  const updateUI = () => {
-    const angle = -90 + (charge / 100) * 180;
-    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-    val.innerText = `${Math.floor(charge)}%`;
-
-    for (let i = statuses.length - 1; i >= 0; i--) {
-      if (charge >= statuses[i].threshold) {
-        status.innerText = statuses[i].text;
-        break;
-      }
-    }
-
-    if (charge >= 100 && !isMaxed) {
-      isMaxed = true;
-      btn.innerText = "👑 1000% QUEEN POWER UNLOCKED! ✨";
-      btn.classList.add('maxed');
-      btn.classList.remove('charging');
-      val.innerText = "OVER 9000%! 💥";
-      launchConfetti();
-      clearInterval(chargeInterval);
-    }
-  };
-
-  const startCharging = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (isMaxed) return;
-
-    btn.classList.add('charging');
-    clearInterval(chargeInterval);
-    chargeInterval = setInterval(() => {
-      if (charge < 100) {
-        charge += 2.5;
-        updateUI();
-      }
-    }, 50);
-  };
-
-  const stopCharging = (e) => {
-    e.stopPropagation();
-    if (isMaxed) return;
-
-    btn.classList.remove('charging');
-    clearInterval(chargeInterval);
-    chargeInterval = setInterval(() => {
-      if (charge > 0) {
-        charge -= 3.5;
-        if (charge < 0) charge = 0;
-        updateUI();
-      } else {
-        clearInterval(chargeInterval);
-      }
-    }, 40);
-  };
-
-  btn.addEventListener('mousedown', startCharging);
-  window.addEventListener('mouseup', stopCharging);
-
-  btn.addEventListener('touchstart', startCharging, { passive: false });
-  window.addEventListener('touchend', stopCharging);
-}
-setupPowerMeter();
-
-function setupCakeDecor() {
-  const cake = document.getElementById('bigCake');
-  const slice = document.getElementById('cakeSlice');
-  const toppingsContainer = document.getElementById('toppingsContainer');
-  const cutBtn = document.getElementById('cutCakeBtn');
-  const toppingButtons = document.querySelectorAll('.topping-btn');
-
-  if (!cake || !slice || !cutBtn) return;
-
-  toppingButtons.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const symbol = btn.getAttribute('data-topping');
-      const el = document.createElement('span');
-      el.className = 'placed-topping';
-      el.innerText = symbol;
-      el.style.left = `${15 + Math.random() * 65}%`;
-      el.style.top = `${Math.random() * 45}px`;
-      toppingsContainer.appendChild(el);
-    });
-  });
-
-  let isCut = false;
-  cutBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!isCut) {
-      isCut = true;
-      cake.style.transform = 'scale(0.8) translateX(-35px)';
-      slice.classList.add('show');
-      cutBtn.innerText = "✨ Decorate Another Cake 🎂";
-      launchConfetti();
-    } else {
-      isCut = false;
-      cake.style.transform = 'scale(1) translateX(0)';
-      slice.classList.remove('show');
-      toppingsContainer.innerHTML = '';
-      cutBtn.innerText = "🔪 Cut a Slice & Eat! 🍰";
-    }
-  });
-}
-setupCakeDecor();
-
-function setupUVFlashlight() {
-  const board = document.getElementById('uvBoard');
-  const beam = document.getElementById('uvBeamLight');
-  const hiddenLayer = document.getElementById('uvHiddenLayer');
-
-  if (!board || !beam || !hiddenLayer) return;
-
-  const handleUVMove = (clientX, clientY) => {
-    const rect = board.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-
-    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-      beam.style.opacity = '1';
-      hiddenLayer.style.opacity = '1';
-      beam.style.left = `${x}px`;
-      beam.style.top = `${y}px`;
-      hiddenLayer.style.clipPath = `circle(55px at ${x}px ${y}px)`;
-    } else {
-      beam.style.opacity = '0';
-      hiddenLayer.style.opacity = '0';
-    }
-  };
-
-  board.addEventListener('mousemove', (e) => handleUVMove(e.clientX, e.clientY));
-  board.addEventListener('mouseleave', () => {
-    beam.style.opacity = '0';
-    hiddenLayer.style.opacity = '0';
-  });
-
-  board.addEventListener('touchmove', (e) => {
-    if (e.touches.length > 0) {
-      handleUVMove(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: true });
-
-  board.addEventListener('touchend', () => {
-    beam.style.opacity = '0';
-    hiddenLayer.style.opacity = '0';
-  });
-}
-setupUVFlashlight();
-
-function setupEnvelope() {
-  const seal = document.getElementById('waxSeal');
-  const flap = document.getElementById('envelopeFlap');
-  const letter = document.getElementById('letterPaper');
-  const hint = document.getElementById('envelopeHint');
-
-  if (!seal || !flap || !letter) return;
-
-  let isOpen = false;
-  let isFullyOpen = false;
-
-  seal.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!isOpen) {
-      isOpen = true;
-      isFullyOpen = true;
-      seal.classList.add('broken');
-      setTimeout(() => {
-        flap.classList.add('open');
-        setTimeout(() => {
-          letter.classList.remove('peeking');
-          letter.classList.add('open');
-          if (hint) hint.innerText = "✨ Tap letter to tuck / pull ✨";
-          launchConfetti();
-        }, 300);
-      }, 200);
-    }
-  });
-
-  letter.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (isOpen) {
-      if (isFullyOpen) {
-        letter.classList.remove('open');
-        letter.classList.add('peeking');
-        isFullyOpen = false;
-      } else {
-        letter.classList.remove('peeking');
-        letter.classList.add('open');
-        isFullyOpen = true;
-      }
-    }
-  });
-}
-setupEnvelope();
-
-function setupFortuneCookie() {
-  const cookie = document.getElementById('fortuneCookie');
-  const paper = document.getElementById('fortunePaper');
-  const text = document.getElementById('fortuneText');
-  const btn = document.getElementById('cookieActionBtn');
-
-  if (!cookie || !paper || !btn) return;
-
-  const compliments = [
-    "Wow how lucky! The stars say you owe MBN a brand new PS5! 🎮✨",
-    "Officially 25! Your quarter-life crisis subscription is now active! 👵🎂",
-    "You’re not 25... you’re 18 with 7 years of legendary experience! 💅👑",
-    "Warning: Turning 25 means 10 PM is now officially bedtime! 😴💤",
-    "May your 25th year bring you unlimited iced coffee & zero back pain! ☕🌸",
-    "You are genuinely one in 8 billion! The world is so lucky to have you! 💖✨",
-    "Fortune says: Today calories are cancelled, eat all the cake you want! 🍰🤤",
-    "A certified queen since day one! Keep ruling with that gorgeous smile! 👑🥰",
-    "May all your wishes, goals, and secret shopping sprees come true! 🛍️✨",
-    "Breaking news: You're still the cutest person on this planet today! 🌸😍"
-  ];
-
-  let isCracked = false;
-  let clickCount = 0;
-
-  const crackCookie = (e) => {
-    e.stopPropagation();
-    clickCount++;
-
-    if (clickCount >= 11) {
-      cookie.classList.add('cracked');
-      text.innerText = "Okay enough with the cookies! 🛑 This much sugar is harmful to your health! 🍪❌";
-      paper.classList.add('show');
-      btn.innerText = "No more cookies for you! 🙅‍♀️";
-      btn.classList.add('disabled');
-      launchConfetti();
-      return;
-    }
-
-    if (!isCracked) {
-      isCracked = true;
-      cookie.classList.add('cracked');
-      const randomMsg = compliments[Math.floor(Math.random() * compliments.length)];
-      text.innerText = randomMsg;
-      paper.classList.add('show');
-      btn.innerText = "✨ Crack Another! 🥠";
-      launchConfetti();
-    } else {
-      paper.classList.remove('show');
-      cookie.classList.remove('cracked');
-      isCracked = false;
-      btn.innerText = "✨ Tap Cookie to Crack Open 🥠";
-    }
-  };
-
-  cookie.addEventListener('click', crackCookie);
-  btn.addEventListener('click', crackCookie);
-}
-setupFortuneCookie();
-
-function setupScratchCard() {
-  const canvas = document.getElementById('scratchCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  
-  canvas.width = 240;
-  canvas.height = 110;
-
-  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  grad.addColorStop(0, '#e5c07b');
-  grad.addColorStop(0.5, '#ffd700');
-  grad.addColorStop(1, '#d4af37');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = '#6d4c41';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('✨ Scratch to Reveal! ✨', canvas.width / 2, canvas.height / 2 + 5);
-
-  let isScratching = false;
-
-  const scratch = (clientX, clientY) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
-
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, 15, 0, Math.PI * 2);
-    ctx.fill();
-  };
-
-  canvas.addEventListener('mousedown', (e) => { isScratching = true; scratch(e.clientX, e.clientY); });
-  window.addEventListener('mousemove', (e) => { if (isScratching) scratch(e.clientX, e.clientY); });
-  window.addEventListener('mouseup', () => { isScratching = false; });
-
-  canvas.addEventListener('touchstart', (e) => { isScratching = true; scratch(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  canvas.addEventListener('touchmove', (e) => { if (isScratching) scratch(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  window.addEventListener('touchend', () => { isScratching = false; });
-}
-setupScratchCard();
-
-function setupCandle() {
-  const container = document.getElementById('cakeContainer');
-  const flame = document.getElementById('candleFlame');
-  const smoke = document.getElementById('candleSmoke');
-  const msg = document.getElementById('wishMessage');
-  const title = document.getElementById('candleTitle');
-  const micBtn = document.getElementById('micBlowBtn');
-
-  if (!container || !flame) return;
-
-  let isBlownOut = false;
-  let audioStream = null;
-  let audioContext = null;
-  let analyser = null;
-  let micAnimationId = null;
-
-  const extinguishCandle = () => {
-    if (isBlownOut) return;
-    isBlownOut = true;
-    flame.classList.remove('waver');
-    flame.classList.add('blown-out');
-    smoke.style.display = 'block';
-    title.innerText = "Wish Granted! ✨🎂";
-    msg.innerText = "May all your dreams come true! 💖";
-    if (micBtn) {
-      micBtn.innerText = "✨ Flame Extinguished ✨";
-      micBtn.classList.remove('listening');
-      micBtn.disabled = true;
-    }
-    launchConfetti();
-
-    if (audioStream) {
-      audioStream.getTracks().forEach(track => track.stop());
-    }
-    if (audioContext && audioContext.state !== 'closed') {
-      audioContext.close();
-    }
-    if (micAnimationId) {
-      cancelAnimationFrame(micAnimationId);
-    }
-  };
-
-  container.addEventListener('click', (e) => {
-    e.stopPropagation();
-    extinguishCandle();
-  });
-
-  const initMicBlow = async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (isBlownOut) return;
-
-    try {
-      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioContext.createMediaStreamSource(audioStream);
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.4;
-      source.connect(analyser);
-
-      micBtn.innerText = "💨 Blow hard into your mic!";
-      micBtn.classList.add('listening');
-      msg.innerText = "Blow continuously into mic! 🌬️";
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      let readyToDetect = false;
-
-      setTimeout(() => {
-        readyToDetect = true;
-      }, 500);
-
-      let sustainedBlowFrames = 0;
-
-      const checkBlow = () => {
-        if (isBlownOut) return;
-        analyser.getByteFrequencyData(dataArray);
-
-        if (readyToDetect) {
-          let sum = 0;
-          for (let i = 2; i < 35; i++) {
-            sum += dataArray[i];
-          }
-          const windEnergy = sum / 33;
-
-          if (windEnergy > 55) {
-            flame.classList.add('waver');
-            sustainedBlowFrames++;
-          } else {
-            flame.classList.remove('waver');
-            sustainedBlowFrames = Math.max(0, sustainedBlowFrames - 1);
-          }
-
-          if (sustainedBlowFrames > 6 || windEnergy > 95) {
-            extinguishCandle();
-            return;
-          }
+/**
+ * EmailVerify – AI Project Cost Calculator & Lead Estimator
+ * Frontend Interactive Engine (Clustox UI)
+ * 2-Stage Yes/No feature flow, in-place DOM updates, unlocked PDF exports, and mandatory validated phone.
+ */
+
+(function () {
+    'use strict';
+
+    const COUNTRY_CODES = [
+        { code: '+92', name: 'PK (+92)' },
+        { code: '+1',  name: 'US/CA (+1)' },
+        { code: '+44', name: 'UK (+44)' },
+        { code: '+971', name: 'UAE (+971)' },
+        { code: '+966', name: 'SA (+966)' },
+        { code: '+91',  name: 'IN (+91)' },
+        { code: '+61',  name: 'AU (+61)' },
+        { code: '+49',  name: 'DE (+49)' },
+        { code: '+33',  name: 'FR (+33)' },
+        { code: '+65',  name: 'SG (+65)' },
+        { code: '+60',  name: 'MY (+60)' },
+        { code: '+86',  name: 'CN (+86)' },
+        { code: '+81',  name: 'JP (+81)' },
+        { code: '+41',  name: 'CH (+41)' },
+        { code: '+974', name: 'QA (+974)' },
+        { code: '+968', name: 'OM (+968)' },
+        { code: '+973', name: 'BH (+973)' },
+        { code: '+965', name: 'KW (+965)' },
+        { code: '+27',  name: 'ZA (+27)' },
+        { code: '+20',  name: 'EG (+20)' },
+        { code: '+234', name: 'NG (+234)' },
+        { code: '+46',  name: 'SE (+46)' },
+        { code: '+31',  name: 'NL (+31)' },
+        { code: '+34',  name: 'ES (+34)' },
+        { code: '+39',  name: 'IT (+39)' },
+        { code: '+55',  name: 'BR (+55)' },
+        { code: '+52',  name: 'MX (+52)' },
+        { code: '+90',  name: 'TR (+90)' },
+    ];
+
+    // High-Resolution Crisp Vector Illustrations
+    const SVG_EXISTING_APPS = `
+    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="20" width="100" height="160" rx="16" fill="#EFF6FF" stroke="#3B82F6" stroke-width="4"/>
+        <rect x="62" y="38" width="76" height="32" rx="6" fill="#DBEAFE"/>
+        <rect x="62" y="78" width="76" height="14" rx="4" fill="#93C5FD"/>
+        <rect x="62" y="98" width="76" height="14" rx="4" fill="#BFDBFE"/>
+        <circle cx="80" cy="136" r="12" fill="#3B82F6"/>
+        <circle cx="120" cy="136" r="12" fill="#93C5FD"/>
+        <circle cx="160" cy="90" r="14" fill="#F97316"/>
+        <path d="M142 140 C142 118 178 118 178 140 Z" fill="#1E40AF"/>
+        <line x1="140" y1="40" x2="165" y2="70" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
+    </svg>`;
+
+    const SVG_OWN_BUSINESS = `
+    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="55" y="25" width="95" height="155" rx="16" fill="#F8FAFC" stroke="#64748B" stroke-width="4"/>
+        <circle cx="102.5" cy="50" r="14" fill="#CBD5E1"/>
+        <rect x="70" y="75" width="65" height="10" rx="3" fill="#E2E8F0"/>
+        <rect x="70" y="95" width="65" height="10" rx="3" fill="#E2E8F0"/>
+        <rect x="70" y="115" width="40" height="8" rx="3" fill="#3B82F6"/>
+        <circle cx="120" cy="119" r="6" fill="#10B981"/>
+        <circle cx="45" cy="85" r="14" fill="#3B82F6"/>
+        <path d="M28 135 C28 112 62 112 62 135 Z" fill="#0F172A"/>
+        <circle cx="45" cy="148" r="4" fill="#0F172A"/>
+    </svg>`;
+
+    function initCalculatorInstance(container) {
+        const calcId = container.getAttribute('data-calc-id');
+        const rootApp = container.querySelector('.aics-root-app');
+        if (!calcId || !rootApp) return;
+
+        let calcData = null;
+        let prevPrice = 0;
+        let prevHours = 0;
+
+        // State Store
+        const state = {
+            step: 'landing', // 'landing' | 'sub_select' | 'config' | 'final' | 'success'
+            stepIndex: 0,
+            featureSubStage: 'decision', // 'decision' | 'details'
+            direction: 'forward',
+            mode: 'existing',
+            category: null,
+            platform: null,
+            design: 'custom',
+            features: {},
+            quoteMethod: 'email', // 'email' | 'pdf'
+            selectedCountryCode: '+92',
+        };
+
+        // Fetch Calculator Configuration
+        fetch(`${aicsConfig.rest}calc/${calcId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Calculator data could not be loaded.');
+                return res.json();
+            })
+            .then(data => {
+                calcData = data;
+                render();
+                trackInteraction();
+            })
+            .catch(err => {
+                rootApp.innerHTML = `<div style="text-align:center;padding:2rem;color:#ef4444;font-weight:700;">${err.message || 'Error loading calculator.'}</div>`;
+            });
+
+        function trackInteraction() {
+            fetch(`${aicsConfig.rest}interact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': aicsConfig.nonce },
+                body: JSON.stringify({ calc_id: calcId })
+            }).catch(() => {});
         }
 
-        micAnimationId = requestAnimationFrame(checkBlow);
-      };
+        // Calculation Engine
+        function calculateEstimates() {
+            let baseHours = 0;
+            let basePrice = 0;
 
-      checkBlow();
-    } catch {
-      micBtn.innerText = "Mic unavailable (Tap candle instead)";
-      setTimeout(() => {
-        micBtn.innerText = "🎙️ Enable Mic to Blow";
-      }, 3000);
-    }
-  };
+            if (state.platform) {
+                basePrice += (parseFloat(state.platform.price) || 0);
+            }
 
-  micBtn?.addEventListener('click', initMicBlow);
-  micBtn?.addEventListener('touchstart', initMicBlow, { passive: false });
-}
-setupCandle();
+            Object.values(state.features).forEach(f => {
+                if (f.active) {
+                    baseHours += (parseFloat(f.baseTime) || 0);
+                    basePrice += (parseFloat(f.price) || 0);
 
-document.querySelectorAll('.flip-indicator').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const card = btn.closest('.polaroid-flip-card');
-    card.classList.toggle('flipped');
-  });
-});
+                    if (f.selectedSubs && Array.isArray(f.selectedSubs)) {
+                        f.selectedSubs.forEach(sf => {
+                            baseHours += (parseFloat(sf.time) || 0);
+                            basePrice += (parseFloat(sf.price) || 0);
+                        });
+                    }
+                }
+            });
 
-class Paper {
-  holdingPaper = false;
-  hasMovedSignificantly = false;
-  startX = 0;
-  startY = 0;
-  prevMouseX = 0;
-  prevMouseY = 0;
-  velX = 0;
-  velY = 0;
-  rotation = (Math.random() * 6 - 3);
-  currentPaperX = 0;
-  currentPaperY = 0;
-  domElement = null;
+            let designHours = 0;
+            let designPrice = 0;
+            if (state.design === 'custom') {
+                designHours = Math.round(baseHours * 0.25);
+                designPrice = Math.round(basePrice * 0.25);
+            } else if (state.design === 'luxury') {
+                designHours = Math.round(baseHours * 0.5);
+                designPrice = Math.round(basePrice * 0.5);
+            }
 
-  init(paper, index) {
-    this.domElement = paper;
-    paper.style.zIndex = index + 1;
-    paper.style.transform = `translate(0px, 0px) rotateZ(${this.rotation}deg)`;
+            const totalHours = Math.max(16, baseHours + designHours);
+            const totalPrice = Math.max(650, basePrice + designPrice);
 
-    const isHeart = paper.classList.contains('heart');
+            const devHours = Math.round(totalHours * 0.77);
+            const nonDevHours = totalHours - devHours;
+            const weeks = Math.max(1, Math.ceil(totalHours / 25));
 
-    const handleStart = (clientX, clientY, target) => {
-      if (
-        target.closest('#scratchCanvas') || 
-        target.closest('.flip-indicator') || 
-        target.closest('#cakeContainer') ||
-        target.closest('#cookieWrapper') ||
-        target.closest('#cookieActionBtn') ||
-        target.closest('#micBlowBtn') ||
-        target.closest('#waxSeal') ||
-        target.closest('#letterPaper') ||
-        target.closest('#uvBoard') ||
-        target.closest('#toppingsBar') ||
-        target.closest('#cutCakeBtn') ||
-        target.closest('#chargeBtn') ||
-        target.closest('#glassBottle') ||
-        target.closest('#scrollUnrolled') ||
-        target.closest('#stickersTray') ||
-        target.closest('.upload-btn') ||
-        target.closest('#boothSaveBtn') ||
-        target.closest('.booth-placed-sticker') ||
-        target.closest('#slotSpinBtn') ||
-        target.closest('#crystalBall') ||
-        target.closest('#crystalBtn')
-      ) {
-        return;
-      }
-      if (this.holdingPaper) return;
-      this.holdingPaper = true;
+            const minPrice = Math.round(totalPrice * 0.9);
+            const maxPrice = Math.round(totalPrice * 1.15);
 
-      this.startX = clientX;
-      this.startY = clientY;
-      this.prevMouseX = clientX;
-      this.prevMouseY = clientY;
-
-      paper.classList.remove('snapping-back');
-      paper.classList.add('is-dragging');
-      paper.style.zIndex = highestZ++;
-      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.03) rotateZ(${this.rotation}deg)`;
-    };
-
-    const handleMove = (clientX, clientY) => {
-      if (!this.holdingPaper) return;
-
-      this.velX = clientX - this.prevMouseX;
-      this.velY = clientY - this.prevMouseY;
-
-      this.currentPaperX += this.velX;
-      this.currentPaperY += this.velY;
-
-      this.prevMouseX = clientX;
-      this.prevMouseY = clientY;
-
-      spawnTrailParticle(clientX, clientY);
-
-      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1.03) rotateZ(${this.rotation}deg)`;
-    };
-
-    const handleEnd = (endX, endY) => {
-      if (!this.holdingPaper) return;
-      this.holdingPaper = false;
-      paper.classList.remove('is-dragging');
-      paper.style.transform = `translate(${this.currentPaperX}px, ${this.currentPaperY}px) scale(1) rotateZ(${this.rotation}deg)`;
-
-      const distanceMoved = Math.hypot(endX - this.startX, endY - this.startY);
-
-      if (distanceMoved > 50 && !this.hasMovedSignificantly) {
-        this.hasMovedSignificantly = true;
-        movedCardsCount++;
-        movedHistory.push(this);
-        updateBringBackButton();
-
-        if (movedCardsCount === papers.length - 1) {
-          launchConfetti();
+            return {
+                hours: totalHours,
+                devHours: devHours,
+                nonDevHours: nonDevHours,
+                price: totalPrice,
+                weeks: weeks,
+                formattedPrice: `$${minPrice.toLocaleString()} – $${maxPrice.toLocaleString()}`,
+                formattedTime: `${totalHours} Total Hours (~${weeks} ${weeks === 1 ? 'wk' : 'wks'})`,
+                releaseDate: getEstimatedReleaseDate(weeks)
+            };
         }
-      }
 
-      if (isHeart && distanceMoved < 15) {
-        launchConfetti();
-        setTimeout(() => {
-          window.location.href = SECRET_URL;
-        }, 500);
-      }
-    };
+        function getEstimatedReleaseDate(weeks) {
+            const date = new Date();
+            date.setDate(date.getDate() + (weeks * 7));
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
 
-    paper.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
-      handleStart(e.clientX, e.clientY, e.target);
+        // Live Sidebar Bump & Pulse Animation
+        function updateSummaryCounters(est) {
+            const sumTimeVal = container.querySelector('.aics-stat-summary-time .stat-val');
+            const sumCard = container.querySelector('.aics-stat-summary-time');
+            const devTimeVal = container.querySelector('.aics-stat-dev-time .stat-val');
+            const nonDevTimeVal = container.querySelector('.aics-stat-nondev-time .stat-val');
+
+            if (!sumTimeVal) return;
+
+            if (est.hours !== prevHours) {
+                sumTimeVal.classList.remove('aics-val-bump');
+                sumCard.classList.remove('aics-card-pulse');
+                void sumTimeVal.offsetWidth;
+                sumTimeVal.classList.add('aics-val-bump');
+                sumCard.classList.add('aics-card-pulse');
+            }
+
+            sumTimeVal.innerHTML = `${est.hours} <small>h</small>`;
+            if (devTimeVal) devTimeVal.innerHTML = `${est.devHours} <small>h</small>`;
+            if (nonDevTimeVal) nonDevTimeVal.innerHTML = `${est.nonDevHours} <small>h</small>`;
+
+            prevHours = est.hours;
+            prevPrice = est.price;
+        }
+
+        // FAQ Accordions Builder
+        function getFaqsHtml(screenKey) {
+            if (!calcData.faqs || !Array.isArray(calcData.faqs)) return '';
+            const screenFaqs = calcData.faqs.filter(f => f.screen === screenKey);
+            if (screenFaqs.length === 0) return '';
+
+            const faqsItems = screenFaqs.map((faq, i) => `
+                <div class="aics-faq-item">
+                    <button type="button" class="aics-faq-q" data-faq-index="${i}">
+                        <span>${faq.question}</span>
+                        <span class="aics-faq-toggle-icon">+</span>
+                    </button>
+                    <div class="aics-faq-a-wrap">
+                        <div class="aics-faq-a">${faq.answer}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="aics-faq-section">
+                    <h4 class="aics-faq-heading">Frequently Asked Questions</h4>
+                    <div class="aics-faq-list">${faqsItems}</div>
+                </div>
+            `;
+        }
+
+        // -------------------------------------------------------------
+        // VIEW 1: LANDING SCREEN
+        // -------------------------------------------------------------
+        function renderLanding() {
+            const config = calcData.config || {};
+            const existingTpls = config.existing || [];
+            const customCats = config.custom || [];
+
+            const heroHeadline = config.hero_headline || `Get a Quick Cost Estimate for ${calcData.title}`;
+            const heroSubheading = config.hero_subheading || 'Use this calculator to get a clear estimate based on your selected features, platform, and complexity. It helps you understand what to expect before you begin development.';
+
+            let formattedHeading = heroHeadline;
+            if (heroHeadline.toLowerCase().includes('get a quick cost estimate for')) {
+                const parts = heroHeadline.split(/(Get a Quick Cost Estimate for)/i);
+                formattedHeading = `${parts[1] || 'Get a Quick Cost Estimate for'} <span>${parts[2] || calcData.title}</span>`;
+            } else {
+                formattedHeading = `<span>${heroHeadline}</span>`;
+            }
+
+            const existingPreview = existingTpls.slice(0, 4).map(t => t.name.replace(/(-like|\sStore|\sApp|\sWorkspace|\sPortal).*/i, '')).join(', ') + ' etc.';
+            const customPreview = customCats.slice(0, 4).map(c => c.name.replace(/(\sWebsite|\sMobile|\sApp|\sPortal).*/i, '')).join(', ') + ' etc.';
+
+            return `
+                <div class="aics-view ${state.direction === 'back' ? 'dir-back' : ''}">
+                    <div class="aics-landing-header">
+                        <h1 class="aics-landing-title">${formattedHeading}</h1>
+                        <p class="aics-landing-sub">${heroSubheading}</p>
+                    </div>
+
+                    <div class="aics-master-split-grid">
+                        <div class="aics-master-card" data-master-type="existing">
+                            <div class="aics-master-card-content">
+                                <h3 class="aics-master-card-title">Like Existing Products</h3>
+                                <p class="aics-master-card-desc">${existingPreview}</p>
+                                <button type="button" class="aics-btn-primary">Continue</button>
+                            </div>
+                            <div class="aics-card-illustration">${SVG_EXISTING_APPS}</div>
+                        </div>
+
+                        <div class="aics-master-card" data-master-type="custom">
+                            <div class="aics-master-card-content">
+                                <h3 class="aics-master-card-title">For My Own Business</h3>
+                                <p class="aics-master-card-desc">${customPreview}</p>
+                                <button type="button" class="aics-btn-primary">Continue</button>
+                            </div>
+                            <div class="aics-card-illustration">${SVG_OWN_BUSINESS}</div>
+                        </div>
+                    </div>
+
+                    ${getFaqsHtml('landing')}
+                </div>
+            `;
+        }
+
+        // Sub-selector for picking specific model
+        function renderSubSelector() {
+            const config = calcData.config || {};
+            const items = (state.mode === 'existing') ? (config.existing || []) : (config.custom || []);
+
+            const itemsHtml = items.map(item => `
+                <div class="aics-model-item" data-item-id="${item.id}">
+                    <span class="aics-model-item-title">${item.name}</span>
+                    <span class="aics-model-item-sub">${item.subName || (state.mode === 'existing' ? 'Pre-configured architecture' : 'Built from scratch')}</span>
+                </div>
+            `).join('');
+
+            return `
+                <div class="aics-view ${state.direction === 'back' ? 'dir-back' : ''}">
+                    <button type="button" class="aics-back-pill" id="aics-back-to-master" style="margin-bottom:1rem;">
+                        &larr; Back
+                    </button>
+
+                    <div class="aics-sub-grid-container">
+                        <h2 style="font-size:1.35rem;font-weight:800;margin:0 0 0.4rem;color:#0f172a;">
+                            ${state.mode === 'existing' ? 'Select a Starting Baseline Model' : 'Choose Your Business Category'}
+                        </h2>
+                        <p style="color:#64748b;font-size:0.88rem;margin:0 0 1.25rem;">
+                            Pick the closest match to configure individual features and calculate your sprint timeline.
+                        </p>
+                        <div class="aics-models-grid">${itemsHtml}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Steps sequence generator
+        function getConfigSteps() {
+            const steps = [];
+            const config = calcData.config || {};
+
+            if (config.platforms && config.platforms.length > 0) {
+                steps.push({ type: 'platform', title: 'Target Platform' });
+            }
+
+            let activeFeatures = [];
+            if (state.mode === 'existing' && state.category && state.category.features) {
+                activeFeatures = state.category.features;
+            } else if (config.features) {
+                activeFeatures = config.features;
+            }
+
+            activeFeatures.forEach(f => {
+                steps.push({ type: 'feature', data: f, title: f.name });
+            });
+
+            steps.push({ type: 'design', title: 'Design & UI/UX Tier' });
+
+            return steps;
+        }
+
+        // -------------------------------------------------------------
+        // VIEW 2: CONFIGURATOR (2-STAGE YES/NO -> NEXT SCREEN MVP)
+        // -------------------------------------------------------------
+        function renderConfig() {
+            const steps = getConfigSteps();
+            const currentStep = steps[state.stepIndex] || steps[0];
+            const progress = Math.round(((state.stepIndex + 1) / steps.length) * 100);
+            const est = calculateEstimates();
+            const categoryName = state.category ? state.category.name : 'Project';
+
+            let mainContentHtml = '';
+
+            // 1. Platform Step
+            if (currentStep.type === 'platform') {
+                const platforms = calcData.config.platforms || [];
+                const rows = platforms.map(p => {
+                    const isSelected = state.platform && state.platform.id === p.id;
+                    return `
+                        <div class="aics-model-item aics-platform-card ${isSelected ? 'active' : ''}" data-plat-id="${p.id}" style="margin-bottom:10px;">
+                            <span class="aics-model-item-title">${p.label}</span>
+                            <span class="aics-model-item-sub" style="font-weight:700;color:#059669;">
+                                ${parseFloat(p.price) > 0 ? '+$' + p.price : 'Standard Included'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                mainContentHtml = `
+                    <h3 class="aics-feature-q-title">Select Target Platform</h3>
+                    <p class="aics-feature-q-sub">Choose deployment architecture for your application.</p>
+                    <div style="margin-bottom:1.5rem;" id="aics-platform-list-wrap">${rows}</div>
+                    <button type="button" class="aics-btn-primary aics-step-next" id="aics-save-platform-btn">Save and continue</button>
+                `;
+            }
+
+            // 2. Feature Step (2-Stage Flow: Stage 1 = Yes/No, Stage 2 = MVP Checklists)
+            else if (currentStep.type === 'feature') {
+                const f = currentStep.data;
+                const fState = state.features[f.id] || { active: true, selectedSubs: [] };
+
+                if (state.featureSubStage === 'decision') {
+                    mainContentHtml = `
+                        <h3 class="aics-feature-q-title">${f.name}</h3>
+                        <p class="aics-feature-q-sub">${f.description || 'Handles standard core functional logic.'}</p>
+
+                        <div class="aics-decision-pair">
+                            <div class="aics-decision-card aics-trigger-yes" data-feat-id="${f.id}">
+                                <span class="d-main">Yes</span>
+                                <span class="d-time">+${f.baseTime || 12}h</span>
+                            </div>
+                            <div class="aics-decision-card aics-trigger-no" data-feat-id="${f.id}">
+                                <span class="d-main">No</span>
+                                <span class="d-time">0h</span>
+                            </div>
+                        </div>
+                        <small style="color:#64748b;font-size:0.8rem;display:block;">Click <strong>Yes</strong> to configure detailed sub-options, or <strong>No</strong> to skip.</small>
+                    `;
+                } else {
+                    const mvpSubs = (f.subFeatures || []).filter(s => s.type === 'enough');
+                    const addSubs = (f.subFeatures || []).filter(s => s.type !== 'enough');
+
+                    const renderSubList = (list) => list.map(sf => {
+                        const isChecked = fState.selectedSubs && fState.selectedSubs.some(s => s.id === sf.id);
+                        return `
+                            <label class="aics-check-row">
+                                <input type="checkbox" class="aics-sub-checkbox" data-feat-id="${f.id}" data-sub-id="${sf.id}" ${isChecked ? 'checked' : ''}>
+                                <span class="aics-check-row-label">${sf.name}</span>
+                                <span class="aics-check-row-badge">+${sf.time || 4} hours</span>
+                            </label>
+                        `;
+                    }).join('');
+
+                    mainContentHtml = `
+                        <h3 class="aics-feature-q-title">Do You Need ${f.name}?</h3>
+                        <p class="aics-feature-q-sub">Please choose required features below:</p>
+
+                        <div class="aics-mvp-columns">
+                            <div>
+                                <span class="aics-column-title">Enough for MVP</span>
+                                ${renderSubList(mvpSubs.length ? mvpSubs : f.subFeatures.slice(0, 2))}
+                            </div>
+                            <div>
+                                <span class="aics-column-title">Additional features</span>
+                                ${renderSubList(addSubs.length ? addSubs : f.subFeatures.slice(2))}
+                            </div>
+                        </div>
+
+                        <div style="margin-top:2rem;text-align:right;">
+                            <button type="button" class="aics-btn-primary aics-step-next">Save and continue</button>
+                        </div>
+                    `;
+                }
+            }
+
+            // 3. Design Tier Step
+            else if (currentStep.type === 'design') {
+                mainContentHtml = `
+                    <h3 class="aics-feature-q-title">Select Design &amp; UI/UX Tier</h3>
+                    <p class="aics-feature-q-sub">Choose the design depth and prototyping requirements.</p>
+
+                    <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1.5rem;" id="aics-design-list-wrap">
+                        <div class="aics-decision-card aics-design-card ${state.design === 'standard' ? 'active' : ''}" data-design-val="standard" style="text-align:left;padding:1.2rem;">
+                            <span class="d-main">Standard Clean UI</span>
+                            <span class="d-time" style="margin-top:4px;">Component library design system, clean responsive layouts. (Baseline)</span>
+                        </div>
+                        <div class="aics-decision-card aics-design-card ${state.design === 'custom' ? 'active' : ''}" data-design-val="custom" style="text-align:left;padding:1.2rem;">
+                            <span class="d-main">Bespoke Custom Brand Prototyping</span>
+                            <span class="d-time" style="margin-top:4px;">100% tailor-made Figma prototypes, micro-interactions, brand guide. (+25% scope)</span>
+                        </div>
+                        <div class="aics-decision-card aics-design-card ${state.design === 'luxury' ? 'active' : ''}" data-design-val="luxury" style="text-align:left;padding:1.2rem;">
+                            <span class="d-main">Enterprise / High-Conversion UI</span>
+                            <span class="d-time" style="margin-top:4px;">Custom motion design, interactive micro-states, UX conversion audit. (+50% scope)</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align:right;">
+                        <button type="button" class="aics-btn-primary aics-finish-config">Generate Project Estimate &rarr;</button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="aics-view ${state.direction === 'back' ? 'dir-back' : ''}">
+                    <div class="aics-config-header">
+                        <div class="aics-config-header-left">
+                            <button type="button" class="aics-back-pill" id="aics-btn-back">
+                                &larr; Back
+                            </button>
+                            <h2 class="aics-config-heading">
+                                Configuring Features For <span>${categoryName}?</span>
+                            </h2>
+                        </div>
+                        <span class="aics-step-pill">Step ${state.stepIndex + 1} of ${steps.length}</span>
+                    </div>
+
+                    <div class="aics-slim-progress">
+                        <div class="aics-slim-progress-fill" style="width: ${progress}%;"></div>
+                    </div>
+
+                    <div class="aics-workspace-layout">
+                        <div class="aics-workspace-main">
+                            <div class="aics-feature-card">${mainContentHtml}</div>
+                        </div>
+
+                        <div class="aics-workspace-sidebar">
+                            <div class="aics-sidebar-stack">
+                                <div class="aics-stat-card blue-card aics-stat-summary-time">
+                                    <span class="stat-label">Summary time</span>
+                                    <span class="stat-val">${est.hours} <small>h</small></span>
+                                </div>
+                                <div class="aics-stat-card light-card aics-stat-dev-time">
+                                    <span class="stat-label">Development time</span>
+                                    <span class="stat-val">${est.devHours} <small>h</small></span>
+                                </div>
+                                <div class="aics-stat-card light-card aics-stat-nondev-time">
+                                    <span class="stat-label">Non-dev time</span>
+                                    <span class="stat-val">${est.nonDevHours} <small>h</small></span>
+                                </div>
+                                <div class="aics-sidebar-note">
+                                    It's the time required to implement given functionality. It includes time for business logic, UI (User Interface) and unit testing.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${getFaqsHtml('config')}
+                </div>
+            `;
+        }
+
+        // -------------------------------------------------------------
+        // VIEW 3: FINAL ESTIMATE SCREEN (SPACIOUS METRICS & LEAD CAPTURE)
+        // -------------------------------------------------------------
+        function renderFinal() {
+            const est = calculateEstimates();
+
+            const countryOptions = COUNTRY_CODES.map(c => `
+                <option value="${c.code}" ${state.selectedCountryCode === c.code ? 'selected' : ''}>${c.name}</option>
+            `).join('');
+
+            return `
+                <div class="aics-view ${state.direction === 'back' ? 'dir-back' : ''}">
+                    <button type="button" class="aics-back-pill" id="aics-btn-back-final" style="margin-bottom:1.5rem;">
+                        &larr; Adjust Specifications
+                    </button>
+
+                    <div class="aics-final-grid">
+                        <div class="aics-final-summary-pane">
+                            <div>
+                                <h2>Your Project Estimate</h2>
+                                <div class="pane-sub">${calcData.title} &bull; ${state.category ? state.category.name : 'Custom Scope'}</div>
+
+                                <div class="aics-final-total-box">
+                                    <div class="lbl">Estimated Budget Range</div>
+                                    <div class="val-price">${est.formattedPrice}</div>
+                                </div>
+
+                                <div class="aics-spacious-metrics-grid">
+                                    <div class="aics-metric-card">
+                                        <div class="m-lbl">Estimated Timeline</div>
+                                        <div class="m-val">${est.hours} Total Hours <small>(~${est.weeks} ${est.weeks === 1 ? 'wk' : 'wks'})</small></div>
+                                    </div>
+                                    <div class="aics-metric-card">
+                                        <div class="m-lbl">Est. Delivery Target</div>
+                                        <div class="m-val">${est.releaseDate} <small>Sprint Velocity</small></div>
+                                    </div>
+                                </div>
+
+                                <div class="aics-pro-promo-box">
+                                    <div class="aics-pro-promo-icon">⚡</div>
+                                    <div class="aics-pro-promo-text">
+                                        <strong>Full SOW &amp; Milestones Included</strong>
+                                        <span>Itemized feature breakdown, tech stack proposal &amp; sprint roadmap.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="padding-top:1rem;border-top:1px solid rgba(255,255,255,0.12);font-size:0.75rem;color:#94a3b8;">
+                                Based on agile velocity of 25-30 hours per sprint.
+                            </div>
+                        </div>
+
+                        <div class="aics-final-form-pane">
+                            <h3>Receive Your Detailed Scope</h3>
+                            <p class="form-sub">Enter your details to receive an itemized breakdown, tech stack proposal, and roadmap.</p>
+
+                            <div class="aics-delivery-methods">
+                                <div class="aics-method-card ${state.quoteMethod === 'email' ? 'active' : ''}" data-method="email">
+                                    <span class="m-title">📧 Send to Email</span>
+                                    <span class="m-sub">Instant Inbox Dispatch</span>
+                                </div>
+                                <div class="aics-method-card ${state.quoteMethod === 'pdf' ? 'active' : ''}" data-method="pdf">
+                                    <span class="m-title">📄 Download PDF</span>
+                                    <span class="m-sub">Branded Scope Document</span>
+                                </div>
+                            </div>
+
+                            <form id="aics-lead-form">
+                                <div class="aics-field-group">
+                                    <label>Your Name *</label>
+                                    <input type="text" name="name" required placeholder="John Doe">
+                                </div>
+                                <div class="aics-field-group">
+                                    <label>Email Address *</label>
+                                    <input type="email" name="email" required placeholder="john@example.com">
+                                </div>
+
+                                <div class="aics-field-group">
+                                    <label>Phone / WhatsApp *</label>
+                                    <div class="aics-phone-input-row">
+                                        <select id="aics-country-code-select" aria-label="Country Code">
+                                            ${countryOptions}
+                                        </select>
+                                        <input type="tel" name="phone" id="aics-phone-input" required placeholder="3001234567" maxlength="11" autocomplete="tel">
+                                    </div>
+                                    <small style="color:#64748b;font-size:0.72rem;margin-top:4px;display:block;">Only 11 numerical digits (e.g. 3001234567 for PK numbers).</small>
+                                </div>
+
+                                <div style="margin-top:1.5rem;">
+                                    <button type="submit" class="aics-btn-primary aics-btn-block" id="aics-submit-lead-btn">
+                                        ${state.quoteMethod === 'pdf' ? '📄 Download Official PDF Scope' : 'Send Me Full Scope &amp; Quote'}
+                                    </button>
+                                </div>
+                                <div style="font-size:0.72rem;color:#64748b;text-align:center;margin-top:0.75rem;">
+                                    🔒 100% confidential. No spam guaranteed.
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    ${getFaqsHtml('final')}
+                </div>
+            `;
+        }
+
+        // VIEW 4: SUCCESS SCREEN
+        function renderSuccess() {
+            return `
+                <div class="aics-view">
+                    <div class="aics-success-card">
+                        <div style="font-size:3.5rem;margin-bottom:1rem;">🎉</div>
+                        <h2>Estimation Dispatched Successfully!</h2>
+                        <p>Thank you. Your detailed scope breakdown and technical sprint timeline have been logged. Our engineering lead will review your specifications shortly.</p>
+                        <button type="button" class="aics-btn-primary" id="aics-restart-btn">Calculate Another Project</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // PDF Generation
+        function generatePdfDocument() {
+            const est = calculateEstimates();
+            const siteName = aicsConfig.site_name || 'Project Estimator';
+            const categoryName = state.category ? state.category.name : 'Custom Scope';
+
+            const featuresHtml = Object.values(state.features)
+                .filter(f => f.active)
+                .map(f => {
+                    const subs = (f.selectedSubs || []).map(s => `<li>${s.name}</li>`).join('');
+                    return `<div style="margin-bottom:8px;"><strong>${f.name}</strong>${subs ? `<ul style="margin:4px 0 0 16px;color:#555;">${subs}</ul>` : ''}</div>`;
+                }).join('');
+
+            const faqsHtml = (calcData.faqs || []).map(f => `
+                <div style="margin-bottom:10px;">
+                    <div style="font-weight:bold;color:#0f172a;">Q: ${f.question}</div>
+                    <div style="color:#475569;font-size:12px;margin-top:2px;">A: ${f.answer}</div>
+                </div>
+            `).join('');
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) return;
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${categoryName} - Technical Scope Estimate</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px; color: #0f172a; max-width: 800px; margin: 0 auto; }
+                        .header { border-bottom: 2px solid #0052fe; padding-bottom: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+                        .title { font-size: 24px; font-weight: 800; color: #0f172a; }
+                        .badge { background: #eff6ff; color: #0052fe; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+                        .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+                        .stat-val { font-size: 20px; font-weight: 800; color: #059669; margin-top: 4px; }
+                        .section-title { font-size: 16px; font-weight: 700; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin: 25px 0 15px; color: #1e3a8a; }
+                        @media print { body { padding: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="title">${categoryName}</div>
+                            <div style="color:#64748b;margin-top:4px;">Technical Scope &amp; Estimation Document</div>
+                        </div>
+                        <div class="badge">${siteName}</div>
+                    </div>
+
+                    <div class="stat-box">
+                        <div><small style="color:#64748b;">ESTIMATED BUDGET</small><div class="stat-val">${est.formattedPrice}</div></div>
+                        <div><small style="color:#64748b;">TIMELINE</small><div class="stat-val" style="color:#0052fe;">${est.hours} Total Hours</div></div>
+                        <div><small style="color:#64748b;">TARGET RELEASE</small><div class="stat-val" style="color:#0f172a;font-size:16px;">${est.releaseDate}</div></div>
+                    </div>
+
+                    <div class="section-title">Included Scope &amp; Functional Modules</div>
+                    <div>${featuresHtml}</div>
+
+                    ${faqsHtml ? `<div class="section-title">Frequently Asked Questions &amp; Guidelines</div><div>${faqsHtml}</div>` : ''}
+
+                    <div style="margin-top:40px;padding-top:15px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:11px;text-align:center;">
+                        Generated by ${siteName} Interactive Scoping Engine on ${new Date().toLocaleDateString()}.
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); }, 250);
+        }
+
+        // Master Render Controller
+        function render() {
+            if (!calcData) return;
+
+            if (state.step === 'landing') {
+                rootApp.innerHTML = renderLanding();
+            } else if (state.step === 'sub_select') {
+                rootApp.innerHTML = renderSubSelector();
+            } else if (state.step === 'config') {
+                rootApp.innerHTML = renderConfig();
+            } else if (state.step === 'final') {
+                rootApp.innerHTML = renderFinal();
+            } else if (state.step === 'success') {
+                rootApp.innerHTML = renderSuccess();
+            }
+
+            attachEvents();
+        }
+
+        // Event Handling
+        function attachEvents() {
+            // Master Choice Cards
+            rootApp.querySelectorAll('.aics-master-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const type = this.getAttribute('data-master-type');
+                    state.mode = type;
+                    state.direction = 'forward';
+                    state.step = 'sub_select';
+                    render();
+                });
+            });
+
+            // Back to Master Cards
+            const btnBackMaster = rootApp.querySelector('#aics-back-to-master');
+            if (btnBackMaster) {
+                btnBackMaster.addEventListener('click', function () {
+                    state.direction = 'back';
+                    state.step = 'landing';
+                    render();
+                });
+            }
+
+            // Model Selection
+            rootApp.querySelectorAll('.aics-model-item[data-item-id]').forEach(item => {
+                item.addEventListener('click', function () {
+                    const itemId = this.getAttribute('data-item-id');
+                    if (!itemId) return;
+
+                    state.direction = 'forward';
+                    const config = calcData.config || {};
+
+                    if (state.mode === 'existing') {
+                        const tpl = (config.existing || []).find(t => t.id === itemId);
+                        state.category = tpl;
+
+                        state.features = {};
+                        (tpl.features || []).forEach(f => {
+                            state.features[f.id] = {
+                                name: f.name,
+                                baseTime: f.baseTime,
+                                price: f.price,
+                                active: true,
+                                selectedSubs: (f.subFeatures || []).filter(s => s.type === 'enough')
+                            };
+                        });
+                    } else {
+                        const cat = (config.custom || []).find(c => c.id === itemId);
+                        state.category = cat;
+
+                        state.features = {};
+                        (config.features || []).forEach(f => {
+                            state.features[f.id] = {
+                                name: f.name,
+                                baseTime: f.baseTime,
+                                price: f.price,
+                                active: true,
+                                selectedSubs: (f.subFeatures || []).filter(s => s.type === 'enough')
+                            };
+                        });
+                    }
+
+                    if (config.platforms && config.platforms.length > 0) {
+                        state.platform = config.platforms[0];
+                    }
+
+                    state.step = 'config';
+                    state.stepIndex = 0;
+                    state.featureSubStage = 'decision';
+                    render();
+                });
+            });
+
+            // Back button in Configurator
+            const btnBack = rootApp.querySelector('#aics-btn-back');
+            if (btnBack) {
+                btnBack.addEventListener('click', function () {
+                    state.direction = 'back';
+                    const steps = getConfigSteps();
+                    const currentStep = steps[state.stepIndex];
+
+                    if (currentStep && currentStep.type === 'feature' && state.featureSubStage === 'details') {
+                        state.featureSubStage = 'decision';
+                        render();
+                        return;
+                    }
+
+                    if (state.stepIndex > 0) {
+                        state.stepIndex--;
+                        state.featureSubStage = 'decision';
+                        render();
+                    } else {
+                        state.step = 'sub_select';
+                        render();
+                    }
+                });
+            }
+
+            // Back button in Final Screen
+            const btnBackFinal = rootApp.querySelector('#aics-btn-back-final');
+            if (btnBackFinal) {
+                btnBackFinal.addEventListener('click', function () {
+                    state.direction = 'back';
+                    state.step = 'config';
+                    const steps = getConfigSteps();
+                    state.stepIndex = steps.length - 1;
+                    state.featureSubStage = 'decision';
+                    render();
+                });
+            }
+
+            // Platform Selection
+            rootApp.querySelectorAll('.aics-platform-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const platId = this.getAttribute('data-plat-id');
+                    const plat = (calcData.config.platforms || []).find(p => p.id === platId);
+                    if (plat) {
+                        state.platform = plat;
+
+                        rootApp.querySelectorAll('.aics-platform-card').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+
+                        const est = calculateEstimates();
+                        updateSummaryCounters(est);
+
+                        const saveBtn = rootApp.querySelector('#aics-save-platform-btn');
+                        if (saveBtn) saveBtn.disabled = false;
+                    }
+                });
+            });
+
+            // Platform Save & Continue
+            const savePlatBtn = rootApp.querySelector('#aics-save-platform-btn');
+            if (savePlatBtn) {
+                savePlatBtn.addEventListener('click', function () {
+                    const steps = getConfigSteps();
+                    if (state.stepIndex < steps.length - 1) {
+                        state.direction = 'forward';
+                        state.stepIndex++;
+                        state.featureSubStage = 'decision';
+                        render();
+                    }
+                });
+            }
+
+            // Feature Stage 1: Yes Click -> Sub-Screen
+            const yesBtn = rootApp.querySelector('.aics-trigger-yes');
+            if (yesBtn) {
+                yesBtn.addEventListener('click', function () {
+                    const fId = this.getAttribute('data-feat-id');
+                    if (state.features[fId]) {
+                        state.features[fId].active = true;
+                    }
+                    state.direction = 'forward';
+                    state.featureSubStage = 'details';
+                    render();
+                });
+            }
+
+            // Feature Stage 1: No Click -> Skip to Next Feature
+            const noBtn = rootApp.querySelector('.aics-trigger-no');
+            if (noBtn) {
+                noBtn.addEventListener('click', function () {
+                    const fId = this.getAttribute('data-feat-id');
+                    if (state.features[fId]) {
+                        state.features[fId].active = false;
+                    }
+                    const est = calculateEstimates();
+                    updateSummaryCounters(est);
+
+                    const steps = getConfigSteps();
+                    if (state.stepIndex < steps.length - 1) {
+                        state.direction = 'forward';
+                        state.stepIndex++;
+                        state.featureSubStage = 'decision';
+                        render();
+                    }
+                });
+            }
+
+            // Sub-feature Checkboxes
+            rootApp.querySelectorAll('.aics-sub-checkbox').forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const fId = this.getAttribute('data-feat-id');
+                    const sfId = this.getAttribute('data-sub-id');
+                    if (!state.features[fId]) return;
+
+                    let steps = getConfigSteps();
+                    let fObj = steps.find(s => s.type === 'feature' && s.data.id === fId);
+                    if (!fObj) return;
+
+                    let subObj = (fObj.data.subFeatures || []).find(s => s.id === sfId);
+                    if (!subObj) return;
+
+                    if (!state.features[fId].selectedSubs) state.features[fId].selectedSubs = [];
+
+                    if (this.checked) {
+                        if (!state.features[fId].selectedSubs.some(s => s.id === sfId)) {
+                            state.features[fId].selectedSubs.push(subObj);
+                        }
+                    } else {
+                        state.features[fId].selectedSubs = state.features[fId].selectedSubs.filter(s => s.id !== sfId);
+                    }
+
+                    const est = calculateEstimates();
+                    updateSummaryCounters(est);
+                });
+            });
+
+            // Design Tier Selection
+            rootApp.querySelectorAll('.aics-design-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const designVal = this.getAttribute('data-design-val');
+                    if (designVal) {
+                        state.design = designVal;
+                        rootApp.querySelectorAll('.aics-design-card').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+
+                        const est = calculateEstimates();
+                        updateSummaryCounters(est);
+                    }
+                });
+            });
+
+            // Feature Save & Continue Button
+            const nextBtn = rootApp.querySelector('.aics-step-next');
+            if (nextBtn && !savePlatBtn) {
+                nextBtn.addEventListener('click', function () {
+                    const steps = getConfigSteps();
+                    if (state.stepIndex < steps.length - 1) {
+                        state.direction = 'forward';
+                        state.stepIndex++;
+                        state.featureSubStage = 'decision';
+                        render();
+                    }
+                });
+            }
+
+            // Finish Config Button -> Final Step
+            const finishBtn = rootApp.querySelector('.aics-finish-config');
+            if (finishBtn) {
+                finishBtn.addEventListener('click', function () {
+                    state.direction = 'forward';
+                    state.step = 'final';
+                    render();
+                });
+            }
+
+            // Delivery Method Selector (Email vs PDF)
+            rootApp.querySelectorAll('.aics-method-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const method = this.getAttribute('data-method');
+                    state.quoteMethod = method;
+                    rootApp.querySelectorAll('.aics-method-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const submitBtn = rootApp.querySelector('#aics-submit-lead-btn');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = (method === 'pdf')
+                            ? '📄 Download Official PDF Scope'
+                            : 'Send Me Full Scope &amp; Quote';
+                    }
+                });
+            });
+
+            // Country Code Select
+            const countrySelect = rootApp.querySelector('#aics-country-code-select');
+            if (countrySelect) {
+                countrySelect.addEventListener('change', function () {
+                    state.selectedCountryCode = this.value;
+                });
+            }
+
+            // Strict Phone Number Digit Sanitization & 11-digit Limit
+            const phoneInput = rootApp.querySelector('#aics-phone-input');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                    if (this.value.length > 11) {
+                        this.value = this.value.slice(0, 11);
+                    }
+                });
+            }
+
+            // Lead Form Submission
+            const leadForm = rootApp.querySelector('#aics-lead-form');
+            if (leadForm) {
+                leadForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const submitBtn = rootApp.querySelector('#aics-submit-lead-btn');
+
+                    const formData = new FormData(leadForm);
+                    const rawPhone = (formData.get('phone') || '').trim().replace(/\D/g, '');
+
+                    if (!rawPhone || rawPhone.length < 7) {
+                        alert('Please enter a valid phone number (7 to 11 digits).');
+                        return;
+                    }
+
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Processing & Submitting...';
+
+                    const est = calculateEstimates();
+                    const formattedPhone = `${state.selectedCountryCode} ${rawPhone}`;
+
+                    const featuresText = Object.values(state.features)
+                        .filter(f => f.active)
+                        .map(f => {
+                            const subs = (f.selectedSubs || []).map(s => s.name).join(', ');
+                            return `• ${f.name}${subs ? ` (${subs})` : ''}`;
+                        }).join("\n");
+
+                    const payload = {
+                        calc_id: calcId,
+                        calc_title: calcData.title,
+                        name: formData.get('name'),
+                        email: formData.get('email'),
+                        phone: formattedPhone,
+                        niche: calcData.niche_key,
+                        category: state.category ? state.category.name : 'Custom',
+                        platform: state.platform ? state.platform.label : 'Default',
+                        design: state.design,
+                        features_text: featuresText,
+                        summary_time: est.formattedTime,
+                        summary_price: est.formattedPrice,
+                        release_date: est.releaseDate,
+                        page_url: window.location.href,
+                        send_email: (state.quoteMethod === 'email'),
+                    };
+
+                    fetch(`${aicsConfig.rest}lead`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': aicsConfig.nonce },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => res.json())
+                    .then(() => {
+                        if (state.quoteMethod === 'pdf') {
+                            generatePdfDocument();
+                        }
+                        state.step = 'success';
+                        render();
+                    })
+                    .catch(() => {
+                        if (state.quoteMethod === 'pdf') {
+                            generatePdfDocument();
+                        }
+                        state.step = 'success';
+                        render();
+                    });
+                });
+            }
+
+            // Restart Button
+            const restartBtn = rootApp.querySelector('#aics-restart-btn');
+            if (restartBtn) {
+                restartBtn.addEventListener('click', function () {
+                    state.step = 'landing';
+                    state.stepIndex = 0;
+                    state.featureSubStage = 'decision';
+                    state.category = null;
+                    state.platform = null;
+                    state.features = {};
+                    state.quoteMethod = 'email';
+                    render();
+                });
+            }
+
+            // FAQ Accordions
+            rootApp.querySelectorAll('.aics-faq-q').forEach(qBtn => {
+                qBtn.addEventListener('click', function () {
+                    const item = this.closest('.aics-faq-item');
+                    const wrap = item.querySelector('.aics-faq-a-wrap');
+                    const isOpen = item.classList.contains('open');
+
+                    if (isOpen) {
+                        item.classList.remove('open');
+                        wrap.style.maxHeight = null;
+                    } else {
+                        item.classList.add('open');
+                        wrap.style.maxHeight = wrap.scrollHeight + 'px';
+                    }
+                });
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.aics-embed-container').forEach(initCalculatorInstance);
     });
-
-    window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-    window.addEventListener('mouseup', (e) => handleEnd(e.clientX, e.clientY));
-
-    paper.addEventListener('touchstart', (e) => {
-      if (e.touches.length > 1) return;
-      handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
-    }, { passive: true });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!this.holdingPaper) return;
-      handleMove(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-
-    window.addEventListener('touchend', (e) => {
-      const t = e.changedTouches ? e.changedTouches[0] : { clientX: this.prevMouseX, clientY: this.prevMouseY };
-      handleEnd(t.clientX, t.clientY);
-    });
-
-    window.addEventListener('touchcancel', () => {
-      this.holdingPaper = false;
-      paper.classList.remove('is-dragging');
-    });
-  }
-
-  snapBack() {
-    this.currentPaperX = 0;
-    this.currentPaperY = 0;
-    this.hasMovedSignificantly = false;
-    this.domElement.classList.add('snapping-back');
-    this.domElement.style.zIndex = highestZ++;
-    this.domElement.style.transform = `translate(0px, 0px) scale(1) rotateZ(${this.rotation}deg)`;
-    setTimeout(() => {
-      this.domElement.classList.remove('snapping-back');
-    }, 450);
-  }
-}
-
-papers.forEach((paper, index) => {
-  const p = new Paper();
-  p.init(paper, index);
-});
+})();
