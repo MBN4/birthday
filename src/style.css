@@ -440,6 +440,438 @@ body {
   margin-bottom: 12px;
 }
 
+.gift-card {
+  gap: 8px;
+}
+
+.gift-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: #ea580c;
+  font-weight: bold;
+}
+
+.gift-box-wrapper {
+  position: relative;
+  width: 220px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+.gift-body {
+  position: relative;
+  width: 130px;
+  height: 80px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgba(234, 88, 12, 0.3);
+  z-index: 2;
+}
+
+.gift-ribbon-v {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: #fef08a;
+  transform: translateX(-50%);
+}
+
+.gift-ribbon-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: #fef08a;
+  transform: translateY(-50%);
+}
+
+.gift-lid {
+  position: absolute;
+  bottom: 74px;
+  width: 142px;
+  height: 25px;
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lid-ribbon {
+  position: absolute;
+  width: 20px;
+  top: 0;
+  bottom: 0;
+  background: #fef08a;
+}
+
+.lid-bow {
+  position: absolute;
+  top: -18px;
+  font-size: 26px;
+}
+
+.gift-box-wrapper.opened .gift-lid {
+  transform: translateY(-50px) rotate(-15deg);
+  opacity: 0.2;
+}
+
+.gift-surprise {
+  position: absolute;
+  inset: 0;
+  background: #fffbeb;
+  border: 2px solid #fde047;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transform: scale(0.3) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s, opacity 0.4s ease 0.2s;
+  z-index: 5;
+  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.2);
+}
+
+.gift-box-wrapper.opened .gift-surprise {
+  transform: scale(1) translateY(-10px);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.surprise-icons {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.surprise-text {
+  font-size: 16px;
+  line-height: 1.25;
+  color: #9a3412;
+  font-weight: bold;
+}
+
+.gift-hint {
+  font-size: 16px;
+  color: #c2410c;
+  font-weight: bold;
+}
+
+.biometric-card {
+  gap: 8px;
+}
+
+.biometric-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: #0d9488;
+  font-weight: bold;
+}
+
+.fingerprint-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0;
+}
+
+.scanner-pad {
+  position: relative;
+  width: 90px;
+  height: 105px;
+  background: #0f172a;
+  border-radius: 12px;
+  border: 2px solid #14b8a6;
+  box-shadow: inset 0 0 12px rgba(20, 184, 166, 0.5), 0 4px 12px rgba(13, 148, 136, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
+.thumbprint-icon {
+  font-size: 42px;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.scanner-pad.scanning .thumbprint-icon {
+  opacity: 1;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px #2dd4bf);
+}
+
+.scanner-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #2dd4bf;
+  box-shadow: 0 0 10px #2dd4bf, 0 0 18px #14b8a6;
+  opacity: 0;
+}
+
+.scanner-pad.scanning .scanner-laser {
+  opacity: 1;
+  animation: laserScan 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes laserScan {
+  0% { top: 4px; }
+  100% { top: 96px; }
+}
+
+.scanner-readout {
+  width: 100%;
+  max-width: 260px;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.readout-text {
+  font-size: 16px;
+  line-height: 1.25;
+  color: #115e59;
+  font-weight: bold;
+  transition: opacity 0.2s ease;
+}
+
+.scan-action-btn {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(13, 148, 136, 0.3);
+  user-select: none;
+  touch-action: none;
+}
+
+.scan-action-btn:active {
+  transform: scale(0.94);
+}
+
+.constellation-card {
+  gap: 8px;
+}
+
+.constellation-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+.sky-canvas-container {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  height: 150px;
+  background: radial-gradient(ellipse at center, #1e1b4b 0%, #0f172a 100%);
+  border-radius: 8px;
+  border: 1.5px solid #6366f1;
+  overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+#skyCanvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star-node {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #38bdf8;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px #38bdf8;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  user-select: none;
+  z-index: 2;
+}
+
+.star-node:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.star-node.connected {
+  background: #fbbf24;
+  box-shadow: 0 0 14px #f59e0b;
+}
+
+.constellation-hint {
+  font-size: 16px;
+  color: #4338ca;
+  font-weight: bold;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.bloom-card {
+  gap: 8px;
+}
+
+.bloom-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.garden-stage {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.watering-can {
+  position: absolute;
+  top: 5px;
+  right: 65px;
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  user-select: none;
+}
+
+.watering-can.pouring {
+  transform: rotate(-30deg) translateX(-10px);
+}
+
+.water-drops {
+  position: absolute;
+  top: 40px;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.water-drops.show {
+  opacity: 1;
+  animation: dropRain 0.6s infinite ease-in;
+}
+
+@keyframes dropRain {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(20px); opacity: 0; }
+}
+
+.flower-pot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pot-body {
+  font-size: 46px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.sprout-plant {
+  position: absolute;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(0);
+  transform-origin: bottom center;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.sprout-plant.growing {
+  transform: scale(0.6);
+}
+
+.sprout-plant.bloomed {
+  transform: scale(1.1);
+}
+
+.plant-stem {
+  width: 4px;
+  height: 40px;
+  background: #22c55e;
+  border-radius: 2px;
+}
+
+.plant-leaf {
+  position: absolute;
+  width: 14px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 10px 0 10px 0;
+}
+
+.plant-leaf.left {
+  top: 18px;
+  left: -12px;
+  transform: rotate(-30deg);
+}
+
+.plant-leaf.right {
+  top: 10px;
+  right: -12px;
+  transform: rotate(30deg) scaleX(-1);
+}
+
+.bloomed-flower {
+  position: absolute;
+  top: -24px;
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px #f472b6);
+  animation: gentleBounce 2s infinite ease-in-out;
+}
+
+.bloom-msg {
+  font-size: 16px;
+  color: #15803d;
+  font-weight: bold;
+}
+
 .slot-card {
   gap: 8px;
 }
